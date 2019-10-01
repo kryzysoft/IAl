@@ -1,7 +1,7 @@
 #ifndef WINAPI_WINDOW_MANAGER_H
 #define WINAPI_WINDOW_MANAGER_H
 
-#include "IWindowManager.h"
+#include "IWmal.h"
 #include "Windows.h"
 
 typedef struct
@@ -10,7 +10,7 @@ typedef struct
   IButtonEventHandler *buttonEventHandler;
 } ButtonHandlerItem;
 
-class WinApiWindowManager: public IWindowManager
+class WinApi_Wmal: public IWmal
 {
 private:
   HINSTANCE m_appInstance;
@@ -29,8 +29,8 @@ private:
   static uint32_t windowsCount;
   static int32_t windowHandles[MAX_WINDOWS_COUNT];
 public:
-  WinApiWindowManager(HINSTANCE appInstance);
-  ~WinApiWindowManager();
+  WinApi_Wmal(HINSTANCE appInstance);
+  ~WinApi_Wmal();
 
 
   virtual void Init(int32_t width, int32_t height);

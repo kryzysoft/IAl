@@ -10,7 +10,7 @@ public:
   virtual void ButtonEventHandler(int32_t buttonHandle) = 0;
 };
 
-class IWindowManager
+class IWmal
 {
 public:
   #pragma push_macro("CreateWindow")
@@ -36,7 +36,7 @@ public:
   virtual void Untouch() = 0;
   virtual void Show(int32_t windowHandle) = 0;
   virtual void Hide(int32_t windowHandle) = 0;
-  virtual ~IWindowManager(){};
+  virtual ~IWmal(){};
 };
 
 #endif

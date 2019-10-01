@@ -1,15 +1,15 @@
-#include "WinApiWindowManager.h"
+#include "WinApi_Wmal.h"
 #include "strings.h"
 #include "DebugLog.h"
 #include <commctrl.h>
 
-uint32_t WinApiWindowManager::buttonHandlersCount;
-ButtonHandlerItem WinApiWindowManager::buttonEventHandlers[MAX_BUTTONS_TOTAL];
+uint32_t WinApi_Wmal::buttonHandlersCount;
+ButtonHandlerItem WinApi_Wmal::buttonEventHandlers[MAX_BUTTONS_TOTAL];
 
-uint32_t WinApiWindowManager::windowsCount = 0;
-int32_t WinApiWindowManager::windowHandles[MAX_WINDOWS_COUNT];
+uint32_t WinApi_Wmal::windowsCount = 0;
+int32_t WinApi_Wmal::windowHandles[MAX_WINDOWS_COUNT];
 
-WinApiWindowManager::WinApiWindowManager(HINSTANCE appInstance):
+WinApi_Wmal::WinApi_Wmal(HINSTANCE appInstance):
   m_width(0),
   m_height(0)
 {
@@ -40,7 +40,7 @@ DBG_ASSERT(releaseResult == 1);
   DBG_ASSERT(wc.hCursor!=NULL);
   wc.hbrBackground =( HBRUSH )( COLOR_WINDOW + 1 );
   wc.lpszMenuName = NULL;
-  wc.lpszClassName = "NewWinApiWindowManagerWindow";
+  wc.lpszClassName = "NewWinApi_WmalWindow";
   wc.hIconSm = LoadIcon( NULL, IDI_APPLICATION );
   DBG_ASSERT(wc.hIconSm!=NULL);
 
@@ -48,7 +48,7 @@ DBG_ASSERT(releaseResult == 1);
   DBG_ASSERT((registerClassResult != 0));
 }
 
-int32_t WinApiWindowManager::CreateWin(int32_t x, int32_t y, int32_t width, int32_t height)
+int32_t WinApi_Wmal::CreateWin(int32_t x, int32_t y, int32_t width, int32_t height)
 {
   RECT rect;
   rect.left = 0;
@@ -58,7 +58,7 @@ int32_t WinApiWindowManager::CreateWin(int32_t x, int32_t y, int32_t width, int3
   bool adjustResult = AdjustWindowRectEx(&rect,WS_OVERLAPPEDWINDOW & (~(WS_MAXIMIZE | WS_MINIMIZE | WS_THICKFRAME)),false,WS_EX_CLIENTEDGE);
   DBG_ASSERT(adjustResult==true);
 
-  HWND hwnd = CreateWindowEx( WS_EX_CLIENTEDGE, "NewWinApiWindowManagerWindow", "WinApiWindowManager", WS_OVERLAPPEDWINDOW & (~(WS_MAXIMIZE | WS_MINIMIZE | WS_THICKFRAME)),
+  HWND hwnd = CreateWindowEx( WS_EX_CLIENTEDGE, "NewWinApi_WmalWindow", "WinApi_Wmal", WS_OVERLAPPEDWINDOW & (~(WS_MAXIMIZE | WS_MINIMIZE | WS_THICKFRAME)),
   x, y, rect.right - rect.left, rect.bottom-rect.top, NULL, NULL, m_appInstance, NULL );
   DBG_ASSERT(hwnd != NULL);
   windowHandles[windowsCount] = (int32_t)hwnd;
@@ -67,29 +67,29 @@ int32_t WinApiWindowManager::CreateWin(int32_t x, int32_t y, int32_t width, int3
   return (int32_t)hwnd;
 }
 
-void WinApiWindowManager::Init(int32_t width, int32_t height)
+void WinApi_Wmal::Init(int32_t width, int32_t height)
 {
   m_width = width;
   m_height = height;
 }
 
-int32_t WinApiWindowManager::GetWidth()
+int32_t WinApi_Wmal::GetWidth()
 {
   return m_width;
 }
 
-int32_t WinApiWindowManager::GetHeight()
+int32_t WinApi_Wmal::GetHeight()
 {
   return m_height;
 }
 
-int32_t WinApiWindowManager::CreateText(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height, const char *text)
+int32_t WinApi_Wmal::CreateText(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height, const char *text)
 {
-  DebugWarn("WinApiWindowManager::CreateText not implemented");
+  DebugWarn("WinApi_Wmal::CreateText not implemented");
   return 0;
 }
 
-bool WinApiWindowManager::Execute()
+bool WinApi_Wmal::Execute()
 {
   MSG msg;
   if(GetMessage(&msg, NULL, 0, 0 ))
@@ -104,7 +104,7 @@ bool WinApiWindowManager::Execute()
   }
 }
 
-int32_t WinApiWindowManager::CreateButton(
+int32_t WinApi_Wmal::CreateButton(
     int32_t parent, int32_t x, int32_t y,
     int32_t width, int32_t height, const char *text,
     IButtonEventHandler *buttonEventHandler)
@@ -124,7 +124,7 @@ int32_t WinApiWindowManager::CreateButton(
   return (int32_t)hwndButton;
 }
 
-int32_t WinApiWindowManager::CreateListView(int32_t parent, int32_t x,
+int32_t WinApi_Wmal::CreateListView(int32_t parent, int32_t x,
     int32_t y, int32_t width, int32_t height)
 {
 
@@ -134,7 +134,7 @@ int32_t WinApiWindowManager::CreateListView(int32_t parent, int32_t x,
   return (int32_t)hListView;
 }
 
-void WinApiWindowManager::AddColumnToListView(int32_t listViewHandle,
+void WinApi_Wmal::AddColumnToListView(int32_t listViewHandle,
     int32_t size, const char *name)
 {
   HWND hWndHdr = (HWND)SendMessage((HWND)(listViewHandle), LVM_GETHEADER, 0, 0);
@@ -151,20 +151,20 @@ void WinApiWindowManager::AddColumnToListView(int32_t listViewHandle,
   ListView_InsertColumn( (HWND)listViewHandle, columnCount, & lvc );
 }
 
-void WinApiWindowManager::AddRowToListView(int32_t listViewHandle, const char **row)
+void WinApi_Wmal::AddRowToListView(int32_t listViewHandle, const char **row)
 {
-  DebugWarn("WinApiWindowManager::AddRowToListView not implemented");
+  DebugWarn("WinApi_Wmal::AddRowToListView not implemented");
 }
 
-void WinApiWindowManager::Touch(int32_t x, int32_t y)
-{
-}
-
-void WinApiWindowManager::Untouch()
+void WinApi_Wmal::Touch(int32_t x, int32_t y)
 {
 }
 
-LRESULT CALLBACK WinApiWindowManager::eventHandler( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+void WinApi_Wmal::Untouch()
+{
+}
+
+LRESULT CALLBACK WinApi_Wmal::eventHandler( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
     switch( msg )
     {
@@ -192,19 +192,19 @@ LRESULT CALLBACK WinApiWindowManager::eventHandler( HWND hwnd, UINT msg, WPARAM 
     return 0;
 }
 
-void WinApiWindowManager::Show(int32_t windowHandle)
+void WinApi_Wmal::Show(int32_t windowHandle)
 {
   ShowWindow((HWND)windowHandle, SW_SHOW);
   bool updateWindowResult = UpdateWindow((HWND)windowHandle);
   DBG_ASSERT(updateWindowResult);
 }
 
-void WinApiWindowManager::Hide(int32_t windowHandle)
+void WinApi_Wmal::Hide(int32_t windowHandle)
 {
   ShowWindow((HWND)windowHandle, SW_HIDE);
 }
 
-void WinApiWindowManager::buttonClicked(int32_t buttonHandle)
+void WinApi_Wmal::buttonClicked(int32_t buttonHandle)
 {
   for(uint32_t i=0; i<buttonHandlersCount; i++)
   {
@@ -217,7 +217,7 @@ void WinApiWindowManager::buttonClicked(int32_t buttonHandle)
   }
 }
 
-WinApiWindowManager::~WinApiWindowManager()
+WinApi_Wmal::~WinApi_Wmal()
 {
   DeleteObject(m_hFont);
 }

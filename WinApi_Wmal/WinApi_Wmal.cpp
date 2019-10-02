@@ -17,15 +17,15 @@ WinApi_Wmal::WinApi_Wmal(HINSTANCE appInstance):
   const char* fontName = "Arial";
   const long nFontSize = 7;
   HDC hdc = GetDC(0);
-DBG_ASSERT(hdc!=NULL);
+  DBG_ASSERT(hdc!=NULL);
   LOGFONT logFont = {0};
   logFont.lfHeight = -MulDiv(nFontSize, GetDeviceCaps(hdc, LOGPIXELSY), 72);
   logFont.lfWeight = FW_BOLD;
   strcpy(logFont.lfFaceName, fontName);
   m_hFont = CreateFontIndirect(&logFont);
-DBG_ASSERT(m_hFont!=NULL);
+  DBG_ASSERT(m_hFont!=NULL);
   int32_t releaseResult = ReleaseDC(0, hdc);
-DBG_ASSERT(releaseResult == 1);
+  DBG_ASSERT(releaseResult == 1);
 
   WNDCLASSEX wc;
   wc.cbSize = sizeof( WNDCLASSEX );

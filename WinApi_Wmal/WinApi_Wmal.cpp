@@ -48,29 +48,66 @@ WinApi_Wmal::WinApi_Wmal(HINSTANCE appInstance):
   DBG_ASSERT((registerClassResult != 0));
 }
 
+void WinApi_Wmal::Init(int32_t width, int32_t height)
+{
+  m_width = width;
+  m_height = height;
+
+  m_mainWindowCreated = false;
+
+}
+
+void WinApi_Wmal::createMainWindow()
+{
+  RECT rect;
+  rect.left = 0;
+  rect.top = 0;
+  rect.right = m_width;
+  rect.bottom = m_height;
+
+  const uint32_t WINDOW_STYLE = ((WS_CLIPCHILDREN | WS_OVERLAPPEDWINDOW) & (~(WS_MAXIMIZE | WS_MINIMIZE | WS_THICKFRAME)));
+
+  bool adjustResult = AdjustWindowRectEx(&rect,WINDOW_STYLE,false,WS_EX_CLIENTEDGE);
+  DBG_ASSERT(adjustResult==true);
+
+  HWND hwnd = CreateWindowEx( WS_EX_CLIENTEDGE, "NewWinApi_WmalWindow", "WinApi_Wmal", WINDOW_STYLE | WS_VISIBLE,
+  30, 30, rect.right - rect.left, rect.bottom-rect.top, NULL, NULL, m_appInstance, NULL );
+  DBG_ASSERT(hwnd != NULL);
+  windowHandles[windowsCount] = (int32_t)hwnd;
+  windowsCount++;
+  DBG_ASSERT(windowsCount<MAX_WINDOWS_COUNT);
+
+  m_hMainWindow = hwnd;
+  m_mainWindowCreated = true;
+}
+
 int32_t WinApi_Wmal::CreateWin(int32_t x, int32_t y, int32_t width, int32_t height)
 {
+  if(!m_mainWindowCreated)
+  {
+    createMainWindow();
+  }
   RECT rect;
   rect.left = 0;
   rect.top = 0;
   rect.right = width;
   rect.bottom = height;
-  bool adjustResult = AdjustWindowRectEx(&rect,WS_OVERLAPPEDWINDOW & (~(WS_MAXIMIZE | WS_MINIMIZE | WS_THICKFRAME)),false,WS_EX_CLIENTEDGE);
+
+  const uint32_t WINDOW_STYLE = WS_POPUP|WS_SYSMENU | WS_CHILD;// WS_OVERLAPPEDWINDOW & (~(WS_MAXIMIZE | WS_MINIMIZE | WS_THICKFRAME | WS_BORDER | WS_CAPTION));
+
+  bool adjustResult = AdjustWindowRectEx(&rect,WINDOW_STYLE,false,/*WS_EX_CLIENTEDGE|*/ WS_EX_TOOLWINDOW);
   DBG_ASSERT(adjustResult==true);
 
-  HWND hwnd = CreateWindowEx( WS_EX_CLIENTEDGE, "NewWinApi_WmalWindow", "WinApi_Wmal", WS_OVERLAPPEDWINDOW & (~(WS_MAXIMIZE | WS_MINIMIZE | WS_THICKFRAME)),
+  HWND hwnd = CreateWindowEx( /*WS_EX_CLIENTEDGE|*/WS_EX_TOOLWINDOW, "NewWinApi_WmalWindow", "WinApi_Wmal", WINDOW_STYLE,
   x, y, rect.right - rect.left, rect.bottom-rect.top, NULL, NULL, m_appInstance, NULL );
+
+  SetParent(hwnd,m_hMainWindow);
   DBG_ASSERT(hwnd != NULL);
   windowHandles[windowsCount] = (int32_t)hwnd;
   windowsCount++;
   DBG_ASSERT(windowsCount<MAX_WINDOWS_COUNT);
+  BringWindowToTop(hwnd);
   return (int32_t)hwnd;
-}
-
-void WinApi_Wmal::Init(int32_t width, int32_t height)
-{
-  m_width = width;
-  m_height = height;
 }
 
 int32_t WinApi_Wmal::GetWidth()
@@ -130,7 +167,13 @@ int32_t WinApi_Wmal::CreateListView(int32_t parent, int32_t x,
 
   HWND hListView = CreateWindowEx( 0, WC_LISTVIEW, NULL, WS_CHILD | WS_VISIBLE | LVS_REPORT |
   LVS_EDITLABELS, x, y, width, height, (HWND)parent,0, m_appInstance, NULL );
+
   DBG_ASSERT(hListView != NULL);
+
+  SendMessage(hListView, LVM_SETEXTENDEDLISTVIEWSTYLE,
+    LVS_EX_FULLROWSELECT, LVS_EX_FULLROWSELECT);
+
+
   return (int32_t)hListView;
 }
 
@@ -153,7 +196,26 @@ void WinApi_Wmal::AddColumnToListView(int32_t listViewHandle,
 
 void WinApi_Wmal::AddRowToListView(int32_t listViewHandle, const char **row)
 {
-  DebugWarn("WinApi_Wmal::AddRowToListView not implemented");
+
+  HWND hWndHdr = (HWND)SendMessage((HWND)(listViewHandle), LVM_GETHEADER, 0, 0);
+  DBG_ASSERT(hWndHdr != NULL);
+
+  int32_t columnCount = (int32_t)SendMessage(hWndHdr, HDM_GETITEMCOUNT, 0, 0L);
+
+  LVITEM lvi;
+  memset(&lvi,0,sizeof(LVITEM));
+  lvi.mask      = LVIF_TEXT | LVIF_PARAM | LVIF_STATE;
+  lvi.state     = 0;
+  lvi.stateMask = 0;
+
+  int res = ListView_InsertItem((HWND)listViewHandle, &lvi);
+
+  for(int32_t i=0; i<columnCount; i++)
+  {
+    lvi.iItem    = i;
+    lvi.iSubItem = 0;
+    ListView_SetItemText((HWND)listViewHandle,res,i,const_cast<char*>(row[i]));
+  }
 }
 
 void WinApi_Wmal::Touch(int32_t x, int32_t y)
@@ -166,30 +228,35 @@ void WinApi_Wmal::Untouch()
 
 LRESULT CALLBACK WinApi_Wmal::eventHandler( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
-    switch( msg )
-    {
-      case WM_CLOSE:
-        for (uint32_t i=0; i<windowsCount; i++)
-        {
-          bool destroyResult = DestroyWindow((HWND)windowHandles[i]);
-          DBG_ASSERT(destroyResult);
-        }
-      break;
+  bool destroyResult;
+  switch( msg )
+  {
+    case WM_CLOSE:
+      destroyResult = DestroyWindow(hwnd);
+      DBG_ASSERT(destroyResult);
+// Don't need to call this for child windows
+//        for (uint32_t i=0; i<windowsCount; i++)
+//        {
+//          DebugInfo("Destroying window %d\r\n",i);
+//          bool destroyResult = DestroyWindow((HWND)windowHandles[i]);
+//          DBG_ASSERT(destroyResult);
+//        }
+    break;
 
-      case WM_DESTROY:
-          PostQuitMessage( 0 );
-      break;
+    case WM_DESTROY:
+        PostQuitMessage( 0 );
+    break;
 
-      case WM_COMMAND:
-        buttonClicked(lParam);
-      break;
+    case WM_COMMAND:
+      buttonClicked(lParam);
+    break;
 
-      default:
-          return DefWindowProc( hwnd, msg, wParam, lParam );
-      break;
-    }
+    default:
+        return DefWindowProc( hwnd, msg, wParam, lParam );
+    break;
+  }
 
-    return 0;
+  return 0;
 }
 
 void WinApi_Wmal::Show(int32_t windowHandle)

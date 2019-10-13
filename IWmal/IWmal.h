@@ -13,12 +13,7 @@ public:
 class IWmal
 {
 public:
-  #pragma push_macro("CreateWindow")
-  #undef CreateWindow
   virtual int32_t CreateWin(int32_t x, int32_t y, int32_t width, int32_t height) = 0;
-
-  #pragma pop_macro("CreateWindow")
-
   virtual int32_t CreateText(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height, const char *text) = 0;
   virtual int32_t CreateButton(
       int32_t parent, int32_t x, int32_t y,

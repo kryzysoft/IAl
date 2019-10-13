@@ -28,6 +28,9 @@ private:
   static void buttonClicked(int32_t buttonHandle);
   static uint32_t windowsCount;
   static int32_t windowHandles[MAX_WINDOWS_COUNT];
+  HWND m_hMainWindow;
+  bool m_mainWindowCreated;
+  void createMainWindow();
 public:
   WinApi_Wmal(HINSTANCE appInstance);
   ~WinApi_Wmal();

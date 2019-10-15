@@ -35,6 +35,8 @@ public:
   virtual void AddColumnToListView(int32_t listViewHandle,
       int32_t size, const char *name);
   virtual void AddRowToListView(int32_t listViewHandle, const char **row);
+  virtual int32_t CreateEdit(int32_t x, int32_t y, int32_t width, int32_t height, const char *text);
+  virtual void SetEditText(int32_t editHandle);
   virtual int32_t GetWidth();
   virtual int32_t GetHeight();
   virtual void Touch(int32_t x, int32_t y);

@@ -24,6 +24,11 @@ public:
   virtual void AddColumnToListView(int32_t listViewHandle, int32_t size,
       const char *name) = 0;
   virtual void AddRowToListView(int32_t listViewHandle, const char **row) = 0;
+  virtual int32_t CreateEdit(int32_t hParent, int32_t x, int32_t y, int32_t width, int32_t height, int32_t textLength, const char *text) = 0;
+  virtual void SetEditText(int32_t editHandle, const char *text) = 0;
+  virtual void GetEditText(int32_t editHandle, char *text, int32_t maxLength) = 0;
+  virtual void SetTextBkColor(int32_t textHandle, uint32_t color) = 0;
+  virtual int32_t CreateComboBox(int32_t hParent, int32_t x, int32_t y, int32_t width, int32_t height, const char **items, const int32_t itemsCount) = 0;
   virtual bool Execute() = 0;
   virtual int32_t GetWidth() = 0;
   virtual int32_t GetHeight() = 0;

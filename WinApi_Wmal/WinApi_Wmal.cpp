@@ -7,7 +7,11 @@ uint32_t WinApi_Wmal::buttonHandlersCount;
 ButtonHandlerItem WinApi_Wmal::buttonEventHandlers[MAX_BUTTONS_TOTAL];
 
 uint32_t WinApi_Wmal::windowsCount = 0;
-int32_t WinApi_Wmal::windowHandles[MAX_WINDOWS_COUNT];
+HWND WinApi_Wmal::windowHandles[MAX_WINDOWS_COUNT];
+
+uint32_t WinApi_Wmal::textsCount = 0;
+TextStruct WinApi_Wmal::textStructs[MAX_STATIC_TEXTS];
+
 
 WinApi_Wmal::WinApi_Wmal(HINSTANCE appInstance):
   m_width(0),
@@ -15,7 +19,7 @@ WinApi_Wmal::WinApi_Wmal(HINSTANCE appInstance):
 {
   m_appInstance = appInstance;
   const char* fontName = "Arial";
-  const long nFontSize = 7;
+  const int32_t nFontSize = 7;
   HDC hdc = GetDC(0);
   DBG_ASSERT(hdc!=NULL);
   LOGFONT logFont = {0};
@@ -42,6 +46,7 @@ WinApi_Wmal::WinApi_Wmal(HINSTANCE appInstance):
   wc.lpszMenuName = NULL;
   wc.lpszClassName = "NewWinApi_WmalWindow";
   wc.hIconSm = LoadIcon( NULL, IDI_APPLICATION );
+  wc.hbrBackground = CreateSolidBrush(DEFAULT_BK_COLOR);
   DBG_ASSERT(wc.hIconSm!=NULL);
 
   int32_t registerClassResult = RegisterClassEx(&wc);
@@ -73,7 +78,7 @@ void WinApi_Wmal::createMainWindow()
   HWND hwnd = CreateWindowEx( WS_EX_CLIENTEDGE, "NewWinApi_WmalWindow", "WinApi_Wmal", WINDOW_STYLE | WS_VISIBLE,
   30, 30, rect.right - rect.left, rect.bottom-rect.top, NULL, NULL, m_appInstance, NULL );
   DBG_ASSERT(hwnd != NULL);
-  windowHandles[windowsCount] = (int32_t)hwnd;
+  windowHandles[windowsCount] = hwnd;
   windowsCount++;
   DBG_ASSERT(windowsCount<MAX_WINDOWS_COUNT);
 
@@ -103,7 +108,7 @@ int32_t WinApi_Wmal::CreateWin(int32_t x, int32_t y, int32_t width, int32_t heig
 
   SetParent(hwnd,m_hMainWindow);
   DBG_ASSERT(hwnd != NULL);
-  windowHandles[windowsCount] = (int32_t)hwnd;
+  windowHandles[windowsCount] = hwnd;
   windowsCount++;
   DBG_ASSERT(windowsCount<MAX_WINDOWS_COUNT);
   BringWindowToTop(hwnd);
@@ -122,8 +127,49 @@ int32_t WinApi_Wmal::GetHeight()
 
 int32_t WinApi_Wmal::CreateText(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height, const char *text)
 {
-  DebugWarn("WinApi_Wmal::CreateText not implemented");
-  return 0;
+  HWND hStatic = CreateWindowEx( 0, WC_STATIC, NULL, WS_CHILD | WS_VISIBLE |
+  SS_CENTER | WS_EX_CLIENTEDGE, x, y, width, height, (HWND)parent, NULL, m_appInstance, NULL );
+
+  SetWindowText(hStatic, text);
+
+  textStructs[textsCount].textHandle = hStatic;
+  textStructs[textsCount].bkColor = DEFAULT_BK_COLOR;
+  textStructs[textsCount].parent = (HWND)parent;
+  textStructs[textsCount].hBrush = CreateSolidBrush(DEFAULT_BK_COLOR);
+  DBG_ASSERT(textStructs[textsCount].hBrush != NULL);
+  textsCount++;
+  DBG_ASSERT(textsCount<MAX_STATIC_TEXTS);
+
+  return (int32_t)hStatic;
+}
+
+void WinApi_Wmal::SetTextBkColor(int32_t textHandle, uint32_t color)
+{
+  for(uint32_t i=0; i<textsCount; i++)
+  {
+    if(textHandle == (int32_t)textStructs[i].textHandle)
+    {
+      textStructs[i].bkColor = color;
+      DeleteObject(textStructs[i].hBrush);
+      textStructs[i].hBrush = CreateSolidBrush(color);
+      RECT rect;
+      GetClientRect((HWND)textHandle, &rect);
+      InvalidateRect(textStructs[i].textHandle, &rect, true);
+      UpdateWindow(textStructs[i].textHandle);
+      break;
+    }
+  }
+}
+
+int32_t WinApi_Wmal::CreateComboBox(int32_t hParent, int32_t x, int32_t y, int32_t width, int32_t height, const char **items, const int32_t itemsCount)
+{
+  HWND hComboBox = CreateWindow(WC_COMBOBOX, TEXT(""),CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE, x, y, width, height, (HWND)hParent, NULL, m_appInstance, NULL);
+  for(int32_t i = 0; i<itemsCount; i++)
+  {
+    SendMessage(hComboBox, CB_ADDSTRING, 0,(LPARAM)items[i]);
+  }
+  SendMessage(hComboBox, CB_SETCURSEL, 0, 0);
+  return (int32_t)hComboBox;
 }
 
 bool WinApi_Wmal::Execute()
@@ -218,45 +264,34 @@ void WinApi_Wmal::AddRowToListView(int32_t listViewHandle, const char **row)
   }
 }
 
+int32_t WinApi_Wmal::CreateEdit(int32_t hParent, int32_t x, int32_t y, int32_t width, int32_t height, int32_t textLength, const char *text)
+{
+  HWND hText = CreateWindowEx(0, "EDIT", NULL, WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL, x, y, width, height,
+    (HWND)hParent, NULL, m_appInstance, NULL );
+  DBG_ASSERT(hText != NULL);
+  SetWindowText(hText, text);
+ // SendMessage(hText, EM_SETLIMITTEXT, (WPARAM)textLength, (LPARAM)0);
+  return (int32_t)hText;
+}
+
+void WinApi_Wmal::SetEditText(int32_t editHandle, const char *text)
+{
+  SetWindowText((HWND)editHandle, text);
+}
+
+void WinApi_Wmal::GetEditText(int32_t editHandle, char *text, int32_t maxLength)
+{
+  GetWindowText((HWND)editHandle, text, maxLength);
+}
+
+
 void WinApi_Wmal::Touch(int32_t x, int32_t y)
 {
 }
 
 void WinApi_Wmal::Untouch()
 {
-}
 
-LRESULT CALLBACK WinApi_Wmal::eventHandler( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
-{
-  bool destroyResult;
-  switch( msg )
-  {
-    case WM_CLOSE:
-      destroyResult = DestroyWindow(hwnd);
-      DBG_ASSERT(destroyResult);
-// Don't need to call this for child windows
-//        for (uint32_t i=0; i<windowsCount; i++)
-//        {
-//          DebugInfo("Destroying window %d\r\n",i);
-//          bool destroyResult = DestroyWindow((HWND)windowHandles[i]);
-//          DBG_ASSERT(destroyResult);
-//        }
-    break;
-
-    case WM_DESTROY:
-        PostQuitMessage( 0 );
-    break;
-
-    case WM_COMMAND:
-      buttonClicked(lParam);
-    break;
-
-    default:
-        return DefWindowProc( hwnd, msg, wParam, lParam );
-    break;
-  }
-
-  return 0;
 }
 
 void WinApi_Wmal::Show(int32_t windowHandle)
@@ -284,7 +319,51 @@ void WinApi_Wmal::buttonClicked(int32_t buttonHandle)
   }
 }
 
+LRESULT CALLBACK WinApi_Wmal::eventHandler( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+{
+  bool destroyResult;
+  LRESULT lr = 0;
+  switch( msg )
+  {
+    case WM_CLOSE:
+      destroyResult = DestroyWindow(hwnd);
+      DBG_ASSERT(destroyResult);
+    break;
+
+    case WM_CTLCOLORSTATIC:
+      for (uint32_t i=0; i<textsCount; i++)
+      {
+        if((HWND)lParam == textStructs[i].textHandle)
+        {
+          int32_t setResult = SetBkMode((HDC)wParam, TRANSPARENT);
+          DBG_ASSERT(setResult != 0);
+          return (LRESULT)textStructs[i].hBrush;
+        }
+      }
+    break;
+
+    case WM_DESTROY:
+        PostQuitMessage(0);
+    break;
+
+    case WM_COMMAND:
+      buttonClicked(lParam);
+    break;
+
+    default:
+        return DefWindowProc( hwnd, msg, wParam, lParam );
+    break;
+  }
+
+  return lr;
+}
+
 WinApi_Wmal::~WinApi_Wmal()
 {
+  for(uint32_t i=0; i<textsCount; i++)
+  {
+    int32_t deleteResult = DeleteObject(textStructs[i].hBrush);
+    DBG_ASSERT(deleteResult != 0);
+  }
   DeleteObject(m_hFont);
 }

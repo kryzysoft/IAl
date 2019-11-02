@@ -166,7 +166,7 @@ int32_t WinApi_Wmal::CreateComboBox(int32_t hParent, int32_t x, int32_t y, int32
   HWND hComboBox = CreateWindow(WC_COMBOBOX, TEXT(""),CBS_DROPDOWNLIST | CBS_HASSTRINGS | WS_CHILD | WS_OVERLAPPED | WS_VISIBLE, x, y, width, height, (HWND)hParent, NULL, m_appInstance, NULL);
   for(int32_t i = 0; i<itemsCount; i++)
   {
-    SendMessage(hComboBox, CB_ADDSTRING, 0,(LPARAM)items[i]);
+    SendMessage(hComboBox, CB_ADDSTRING, 0,(LPARAM)const_cast<char*>(items[i]));
   }
   SendMessage(hComboBox, CB_SETCURSEL, 0, 0);
   return (int32_t)hComboBox;
@@ -253,6 +253,7 @@ void WinApi_Wmal::AddRowToListView(int32_t listViewHandle, const char **row)
   lvi.mask      = LVIF_TEXT | LVIF_PARAM | LVIF_STATE;
   lvi.state     = 0;
   lvi.stateMask = 0;
+  lvi.iItem = 65535;
 
   int res = ListView_InsertItem((HWND)listViewHandle, &lvi);
 
@@ -264,13 +265,28 @@ void WinApi_Wmal::AddRowToListView(int32_t listViewHandle, const char **row)
   }
 }
 
+void WinApi_Wmal::GetListViewText(int32_t listViewHandle, int32_t row, int32_t column, char *text, int32_t bufferSize)
+{
+  ListView_GetItemText((HWND)listViewHandle,row,column,text,bufferSize);
+}
+
+void WinApi_Wmal::DeleteListViewRows(int32_t listViewHandle)
+{
+  ListView_DeleteAllItems((HWND)listViewHandle);
+}
+
+int32_t WinApi_Wmal::GetSelectedRow(int32_t listViewHandle)
+{
+  return ListView_GetSelectionMark((HWND)listViewHandle);
+}
+
 int32_t WinApi_Wmal::CreateEdit(int32_t hParent, int32_t x, int32_t y, int32_t width, int32_t height, int32_t textLength, const char *text)
 {
   HWND hText = CreateWindowEx(0, "EDIT", NULL, WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL, x, y, width, height,
     (HWND)hParent, NULL, m_appInstance, NULL );
   DBG_ASSERT(hText != NULL);
   SetWindowText(hText, text);
- // SendMessage(hText, EM_SETLIMITTEXT, (WPARAM)textLength, (LPARAM)0);
+  SendMessage(hText, EM_SETLIMITTEXT, (WPARAM)textLength, (LPARAM)0);
   return (int32_t)hText;
 }
 

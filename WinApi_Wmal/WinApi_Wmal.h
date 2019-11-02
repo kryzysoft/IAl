@@ -63,6 +63,9 @@ public:
   virtual void GetEditText(int32_t editHandle, char *text, int32_t maxLength);
   virtual void SetTextBkColor(int32_t textHandle, uint32_t color);
   virtual int32_t CreateComboBox(int32_t hParent, int32_t x, int32_t y, int32_t width, int32_t height, const char **items, const int32_t itemsCount);
+  virtual void DeleteListViewRows(int32_t listViewHandle);
+  virtual void GetListViewText(int32_t listViewHandle, int32_t row, int32_t column, char *text, int32_t bufferSize);
+  virtual int32_t GetSelectedRow(int32_t listViewHandle);
   virtual int32_t GetWidth();
   virtual int32_t GetHeight();
   virtual void Touch(int32_t x, int32_t y);

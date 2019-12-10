@@ -172,6 +172,19 @@ int32_t WinApi_Wmal::CreateComboBox(int32_t hParent, int32_t x, int32_t y, int32
   return (int32_t)hComboBox;
 }
 
+int32_t WinApi_Wmal::GetComboBoxSelection(int32_t comboBoxHandle)
+{
+  int32_t index=SendMessage((HWND)comboBoxHandle,CB_GETCURSEL,0,0);
+  DBG_ASSERT(index != CB_ERR);
+  return index;
+}
+
+void WinApi_Wmal::SetComboBoxSelection(int32_t comboBoxHandle, int32_t selection)
+{
+  int32_t result = SendMessage((HWND)comboBoxHandle,CB_SETCURSEL,selection,0);
+  DBG_ASSERT(result != CB_ERR);
+}
+
 bool WinApi_Wmal::Execute()
 {
   MSG msg;

@@ -30,6 +30,8 @@ public:
   virtual void GetEditText(int32_t editHandle, char *text, int32_t maxLength) = 0;
   virtual void SetTextBkColor(int32_t textHandle, uint32_t color) = 0;
   virtual int32_t CreateComboBox(int32_t hParent, int32_t x, int32_t y, int32_t width, int32_t height, const char **items, const int32_t itemsCount) = 0;
+  virtual int32_t GetComboBoxSelection(int32_t comboBoxHandle) = 0;
+  virtual void SetComboBoxSelection(int32_t comboBoxHandle, int32_t selection) = 0;
   virtual void DeleteListViewRows(int32_t listViewHandle) = 0;
   virtual int32_t GetSelectedRow(int32_t listViewHandle) = 0;
   virtual bool Execute() = 0;

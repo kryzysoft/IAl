@@ -21,6 +21,7 @@ typedef struct
 class WinApi_Wmal: public IWmal
 {
 private:
+  WinApi_Wmal(){};
   HINSTANCE m_appInstance;
 
   static LRESULT CALLBACK eventHandler( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
@@ -48,33 +49,33 @@ private:
   static void buttonClicked(int32_t buttonHandle);
   void createMainWindow();
 public:
-  WinApi_Wmal(HINSTANCE appInstance);
+  explicit WinApi_Wmal(HINSTANCE appInstance);
   ~WinApi_Wmal();
 
   virtual void Init(int32_t width, int32_t height);
-  virtual int32_t CreateWin(int32_t x, int32_t y, int32_t width, int32_t height);
-  virtual int32_t CreateText(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height, const char *text);
-  virtual int32_t CreateButton(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height, const char *text, IButtonEventHandler *buttonEventHandler);
-  virtual int32_t CreateListView(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height);
-  virtual void AddColumnToListView(int32_t listViewHandle, int32_t size, const char *name);
-  virtual void AddRowToListView(int32_t listViewHandle, const char **row);
-  virtual int32_t CreateEdit(int32_t hParent, int32_t x, int32_t y, int32_t width, int32_t height, int32_t textLength, const char *text);
-  virtual void SetEditText(int32_t editHandle, const char *text);
-  virtual void GetEditText(int32_t editHandle, char *text, int32_t maxLength);
-  virtual void SetTextBkColor(int32_t textHandle, uint32_t color);
-  virtual int32_t CreateComboBox(int32_t hParent, int32_t x, int32_t y, int32_t width, int32_t height, const char **items, const int32_t itemsCount);
-  virtual int32_t GetComboBoxSelection(int32_t comboBoxHandle);
-  virtual void SetComboBoxSelection(int32_t comboBoxHandle, int32_t selection);
-  virtual void DeleteListViewRows(int32_t listViewHandle);
-  virtual void GetListViewText(int32_t listViewHandle, int32_t row, int32_t column, char *text, int32_t bufferSize);
-  virtual int32_t GetSelectedRow(int32_t listViewHandle);
-  virtual int32_t GetWidth();
-  virtual int32_t GetHeight();
-  virtual void Touch(int32_t x, int32_t y);
-  virtual void Untouch();
-  virtual void Show(int32_t windowHandle);
-  virtual void Hide(int32_t windowHandle);
-  virtual bool Execute();
+  virtual int32_t CreateWin(int32_t x, int32_t y, int32_t width, int32_t height) override;
+  virtual int32_t CreateText(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height, const char *text) override;
+  virtual int32_t CreateButton(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height, const char *text, IButtonEventHandler *buttonEventHandler) override;
+  virtual int32_t CreateListView(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height) override;
+  virtual void AddColumnToListView(int32_t listViewHandle, int32_t size, const char *name) override;
+  virtual void AddRowToListView(int32_t listViewHandle, const char **row) override;
+  virtual int32_t CreateEdit(int32_t hParent, int32_t x, int32_t y, int32_t width, int32_t height, int32_t textLength, const char *text) override;
+  virtual void SetEditText(int32_t editHandle, const char *text) override;
+  virtual void GetEditText(int32_t editHandle, char *text, int32_t maxLength) override;
+  virtual void SetTextBkColor(int32_t textHandle, uint32_t color) override;
+  virtual int32_t CreateComboBox(int32_t hParent, int32_t x, int32_t y, int32_t width, int32_t height, const char **items, const int32_t itemsCount) override;
+  virtual int32_t GetComboBoxSelection(int32_t comboBoxHandle) override;
+  virtual void SetComboBoxSelection(int32_t comboBoxHandle, int32_t selection) override;
+  virtual void DeleteListViewRows(int32_t listViewHandle) override;
+  virtual void GetListViewText(int32_t listViewHandle, int32_t row, int32_t column, char *text, int32_t bufferSize) override;
+  virtual int32_t GetSelectedRow(int32_t listViewHandle) override;
+  virtual int32_t GetWidth() override;
+  virtual int32_t GetHeight() override;
+  virtual void Touch(int32_t x, int32_t y) override;
+  virtual void Untouch() override;
+  virtual void Show(int32_t windowHandle) override;
+  virtual void Hide(int32_t windowHandle) override;
+  virtual bool Execute() override;
 };
 
 #endif

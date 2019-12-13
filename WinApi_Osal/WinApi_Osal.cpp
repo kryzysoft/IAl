@@ -28,6 +28,6 @@ int32_t WinApiOsal::RegisterTask(ITask *task)
 
 DWORD WINAPI WinApiOsal::threadFunction(LPVOID lpParameter)
 {
-  ((ITask*)lpParameter)->Run();
+  static_cast<ITask*>(lpParameter)->Run();
   return 0;
 }

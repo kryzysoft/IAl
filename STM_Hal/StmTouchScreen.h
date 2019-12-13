@@ -7,8 +7,8 @@ class StmTouchScreen: public IHalTouchScreen
 {
   public:
   	void Init();
-    virtual TouchPosition GetTouchPosition();
-    virtual bool IsTouched();
+    virtual TouchPosition GetTouchPosition() override;
+    virtual bool IsTouched() override;
 };
 
 #endif

@@ -17,8 +17,8 @@ class FreeRtosOsal: public IOsal
 
 		static FreeRtosOsal *osal;
 	public:
-		virtual void Start();
-		virtual int32_t RegisterTask(ITask *task);
+		virtual void Start() override;
+		virtual int32_t RegisterTask(ITask *task) override;
 };
 
 #endif

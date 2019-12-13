@@ -16,11 +16,11 @@ private:
   void setDropdownSkin();
   void setListboxSkin();
 public:
-  void Init();
-  virtual uint32_t GetColorRgb(uint8_t r, uint8_t g, uint8_t b);
-  virtual void Clear();
-  virtual void SetColor(uint32_t color);
-  virtual void DisplayStringAt(const char *text, int32_t x, int32_t y);
+  void Init() override;
+  virtual uint32_t GetColorRgb(uint8_t r, uint8_t g, uint8_t b) override;
+  virtual void Clear() override;
+  virtual void SetColor(uint32_t color) override;
+  virtual void DisplayStringAt(const char *text, int32_t x, int32_t y) override;
 };
 
 

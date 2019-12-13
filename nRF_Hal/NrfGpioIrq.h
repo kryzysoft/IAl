@@ -19,7 +19,7 @@ class NrfGpioIrq: public IHalGpioIrq
     static bool gpioTeEnabled;
     nrfx_gpiote_pin_t m_pinNumber;
   public:
-    NrfGpioIrq(uint32_t pinNumber);
+    explicit NrfGpioIrq(uint32_t pinNumber);
     virtual void SetHandler(IGpioIrqHandler *iqrHandler);
 };
 

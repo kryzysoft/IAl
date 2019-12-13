@@ -15,7 +15,9 @@ TextStruct WinApi_Wmal::textStructs[MAX_STATIC_TEXTS];
 
 WinApi_Wmal::WinApi_Wmal(HINSTANCE appInstance):
   m_width(0),
-  m_height(0)
+  m_height(0),
+  m_hMainWindow(0),
+  m_mainWindowCreated(false)
 {
   m_appInstance = appInstance;
   const char* fontName = "Arial";

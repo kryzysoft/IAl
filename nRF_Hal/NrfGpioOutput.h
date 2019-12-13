@@ -11,7 +11,7 @@ class NrfGpioOutput: public IHalGpioOutput
   private:
     uint32_t m_pinNumber;
   public:
-    NrfGpioOutput(uint32_t pinNumber);
+    explicit NrfGpioOutput(uint32_t pinNumber);
     void Up();
     void Down();
 };

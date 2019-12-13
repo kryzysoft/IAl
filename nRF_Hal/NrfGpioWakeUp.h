@@ -9,7 +9,7 @@ class NrfGpioWakeUp: public IHalGpioWakeUp
   private:
     uint32_t m_pinNumber;
   public:
-    NrfGpioWakeUp(uint32_t pinNumber);
+    explicit NrfGpioWakeUp(uint32_t pinNumber);
     void EnableWakeUp();
 };
 

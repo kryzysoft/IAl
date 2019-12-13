@@ -21,7 +21,7 @@ class NrfEsbRadioPrx: public IHalEsbRadioPrx
     uint8_t m_prefixes[ESB_PREFIXES_COUNT];
 
   public:
-    NrfEsbRadioPrx(bool autoControlHfClock);
+    explicit NrfEsbRadioPrx(bool autoControlHfClock);
     void On();
     void SetupAddress0(uint8_t *address);
     void SetupAddress1(uint8_t *address);

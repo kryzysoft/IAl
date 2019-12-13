@@ -16,8 +16,8 @@ class WinApiOsal: public IOsal
 
 		static WinApiOsal *osal;
 	public:
-		virtual void Start();
-		virtual int32_t RegisterTask(ITask *task);
+		virtual void Start() override;
+		virtual int32_t RegisterTask(ITask *task) override;
 };
 
 #endif

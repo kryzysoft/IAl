@@ -1,4 +1,4 @@
-#include "STemWinWindowManager.h"
+#include "emWin_Wmal.h"
 #include "strings.h"
 #include "dialog.h"
 

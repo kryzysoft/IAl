@@ -1,7 +1,7 @@
 #ifndef STEMWIN_WINDOW_MANAGER_H
 #define STEMWIN_WINDOW_MANAGER_H
 
-#include "IWindowManager.h"
+#include "IWmal.h"
 #include "WM.h"
 
 typedef struct
@@ -10,7 +10,7 @@ typedef struct
   IButtonEventHandler *buttonEventHandler;
 } ButtonHandlerItem;
 
-class STemWinWindowManager: public IWindowManager
+class STemWinWindowManager: public IWmal
 {
 private:
   static void eventHandler(WM_MESSAGE * pMsg);
@@ -43,6 +43,22 @@ public:
   virtual void Untouch();
   virtual void Show(int32_t windowHandle);
   virtual void Hide(int32_t windowHandle);
+
+
+  virtual void GetListViewText(int32_t listViewHandle, int32_t row, int32_t column, char *text, int32_t bufferSize){ };
+  virtual int32_t CreateEdit(int32_t hParent, int32_t x, int32_t y, int32_t width, int32_t height, int32_t textLength, const char *text){ };
+  virtual void SetEditText(int32_t editHandle, const char *text){ };
+  virtual void GetEditText(int32_t editHandle, char *text, int32_t maxLength){ };
+  virtual void SetTextBkColor(int32_t textHandle, uint32_t color){ };
+  virtual int32_t CreateComboBox(int32_t hParent, int32_t x, int32_t y, int32_t width, int32_t height, const char **items, const int32_t itemsCount){ };
+  virtual int32_t GetComboBoxSelection(int32_t comboBoxHandle){ };
+  virtual void SetComboBoxSelection(int32_t comboBoxHandle, int32_t selection){ };
+  virtual void DeleteListViewRows(int32_t listViewHandle){ };
+  virtual int32_t GetSelectedRow(int32_t listViewHandle){ };
+
+
+
+
   virtual bool Execute();
 };
 

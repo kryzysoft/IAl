@@ -71,6 +71,70 @@ int32_t STemWinWindowManager::CreateListView(int32_t parent, int32_t x,
   return hList;
 }
 
+void STemWinWindowManager::GetListViewText(int32_t listViewHandle, int32_t row,
+    int32_t column, char *text, int32_t bufferSize)
+{
+  LISTVIEW_GetItemText(listViewHandle, column, row, text, bufferSize);
+}
+
+int32_t STemWinWindowManager::CreateEdit(int32_t hParent, int32_t x, int32_t y,
+    int32_t width, int32_t height, int32_t textLength, const char *text)
+{
+  EDIT_Handle hEdit = EDIT_CreateEx(x,y,width,height,hParent,WM_CF_SHOW,0,GUI_ID_EDIT0, textLength);
+  EDIT_SetText(hEdit, text);
+  return hEdit;
+}
+
+void STemWinWindowManager::SetEditText(int32_t editHandle, const char *text)
+{
+  EDIT_SetText(editHandle, text);
+}
+
+void STemWinWindowManager::GetEditText(int32_t editHandle, char *text,
+    int32_t maxLength)
+{
+  EDIT_GetText(editHandle, text, maxLength);
+}
+
+void STemWinWindowManager::SetTextBkColor(int32_t textHandle, uint32_t color)
+{
+  TEXT_SetBkColor(textHandle, color);
+}
+
+int32_t STemWinWindowManager::CreateComboBox(int32_t hParent, int32_t x, int32_t y,
+    int32_t width, int32_t height, const char **items,
+    const int32_t itemsCount)
+{
+  DROPDOWN_Handle hComboBox = DROPDOWN_CreateEx(x, y, width, height, hParent,
+      WM_CF_SHOW,DROPDOWN_CF_AUTOSCROLLBAR,GUI_ID_DROPDOWN0);
+
+  for (int32_t i=0; i<itemsCount; i++)
+  {
+    DROPDOWN_AddString(hComboBox, items[i]);
+  }
+  return hComboBox;
+}
+
+int32_t STemWinWindowManager::GetComboBoxSelection(int32_t comboBoxHandle)
+{
+  return DROPDOWN_GetSel(comboBoxHandle);
+}
+
+void STemWinWindowManager::SetComboBoxSelection(int32_t comboBoxHandle, int32_t selection)
+{
+  DROPDOWN_SetSelExp(comboBoxHandle, selection);
+}
+
+void STemWinWindowManager::DeleteListViewRows(int32_t listViewHandle)
+{
+  LISTVIEW_DeleteAllRows(listViewHandle);
+}
+
+int32_t STemWinWindowManager::GetSelectedRow(int32_t listViewHandle)
+{
+  return LISTVIEW_GetSel(listViewHandle);
+}
+
 void STemWinWindowManager::AddColumnToListView(int32_t listViewHandle,
     int32_t size, const char *name)
 {

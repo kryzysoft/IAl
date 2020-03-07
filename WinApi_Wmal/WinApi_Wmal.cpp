@@ -3,14 +3,21 @@
 #include "DebugLog.h"
 #include <commctrl.h>
 
-uint32_t WinApi_Wmal::buttonHandlersCount;
+uint32_t WinApi_Wmal::buttonHandlersCount = 0;
 ButtonHandlerItem WinApi_Wmal::buttonEventHandlers[MAX_BUTTONS_TOTAL];
+
+uint32_t WinApi_Wmal::paintHandlersCount = 0;
+PaintHandlerItem WinApi_Wmal::paintEventHandlers[MAX_WINDOWS_COUNT];
 
 uint32_t WinApi_Wmal::windowsCount = 0;
 HWND WinApi_Wmal::windowHandles[MAX_WINDOWS_COUNT];
 
 uint32_t WinApi_Wmal::textsCount = 0;
 TextStruct WinApi_Wmal::textStructs[MAX_STATIC_TEXTS];
+
+bool WinApi_Wmal::paintInProgress = false;
+
+HDC WinApi_Wmal::currentHdc;
 
 
 WinApi_Wmal::WinApi_Wmal(HINSTANCE appInstance):
@@ -222,6 +229,15 @@ int32_t WinApi_Wmal::CreateButton(
   return (int32_t)hwndButton;
 }
 
+
+void WinApi_Wmal::AssignPaintCallback(int32_t windowHandle, IPaintEventHandler *paintEventHandler)
+{
+  DBG_ASSERT(paintHandlersCount < MAX_WINDOWS_COUNT);
+  paintEventHandlers[paintHandlersCount].paintWindowHandler = paintEventHandler;
+  paintEventHandlers[paintHandlersCount].windowHandle = windowHandle;
+  paintHandlersCount++;
+}
+
 int32_t WinApi_Wmal::CreateListView(int32_t parent, int32_t x,
     int32_t y, int32_t width, int32_t height)
 {
@@ -233,7 +249,6 @@ int32_t WinApi_Wmal::CreateListView(int32_t parent, int32_t x,
 
   SendMessage(hListView, LVM_SETEXTENDEDLISTVIEWSTYLE,
     LVS_EX_FULLROWSELECT, LVS_EX_FULLROWSELECT);
-
 
   return (int32_t)hListView;
 }
@@ -341,10 +356,38 @@ void WinApi_Wmal::buttonClicked(int32_t buttonHandle)
 {
   for(uint32_t i=0; i<buttonHandlersCount; i++)
   {
-    DBG_ASSERT(buttonEventHandlers[i].buttonEventHandler != NULL);
     if(buttonEventHandlers[i].buttonHandle == buttonHandle)
     {
+      DBG_ASSERT(buttonEventHandlers[i].buttonEventHandler != NULL);
       buttonEventHandlers[i].buttonEventHandler->ButtonEventHandler(buttonHandle);
+      break;
+    }
+  }
+}
+
+void WinApi_Wmal::DrawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
+{
+  DBG_ASSERT(paintInProgress == true);
+  bool result = MoveToEx(currentHdc, x0, y0, NULL);
+  DBG_ASSERT(result == true);
+  result = LineTo(currentHdc, x1, y1);
+  DBG_ASSERT(result == true);
+}
+
+void WinApi_Wmal::paintWindow(int32_t windowHandle)
+{
+  for(uint32_t i=0; i<paintHandlersCount; i++)
+  {
+    if(paintEventHandlers[i].windowHandle == windowHandle)
+    {
+      DBG_ASSERT(paintEventHandlers[i].paintWindowHandler != NULL);
+      PAINTSTRUCT ps;
+      currentHdc = BeginPaint((HWND)windowHandle, &ps);
+      DBG_ASSERT(currentHdc != NULL);
+      paintInProgress = true;
+      paintEventHandlers[i].paintWindowHandler->PaintEventHandler(windowHandle);
+      paintInProgress = false;
+      EndPaint((HWND)windowHandle, &ps);
       break;
     }
   }
@@ -380,6 +423,11 @@ LRESULT CALLBACK WinApi_Wmal::eventHandler( HWND hwnd, UINT msg, WPARAM wParam, 
     case WM_COMMAND:
       buttonClicked(lParam);
     break;
+
+    case WM_PAINT:
+      paintWindow((int32_t)hwnd);
+      break;
+
 
     default:
         return DefWindowProc( hwnd, msg, wParam, lParam );

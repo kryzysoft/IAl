@@ -1,6 +1,7 @@
 #include "emWin_Wmal.h"
 #include "strings.h"
 #include "dialog.h"
+#include "DebugLog.h"
 
 uint32_t STemWinWindowManager::buttonHandlersCount;
 ButtonHandlerItem STemWinWindowManager::buttonEventHandlers[MAX_BUTTONS_TOTAL];
@@ -13,7 +14,10 @@ STemWinWindowManager::STemWinWindowManager():
 
 int32_t STemWinWindowManager::CreateWin(int32_t x, int32_t y, int32_t width, int32_t height)
 {
-  return WINDOW_CreateEx(x,y,width,height,0,0,0,GUI_ID_USER,&eventHandler);
+  WM_HWIN hWindow = WINDOW_CreateEx(x,y,width,height,0,0,0,GUI_ID_USER
+      ,&eventHandler);
+  DBG_ASSERT(hWindow!=0);
+  return hWindow;
 }
 
 void STemWinWindowManager::Init(int32_t width, int32_t height)
@@ -34,7 +38,11 @@ int32_t STemWinWindowManager::GetHeight()
 
 int32_t STemWinWindowManager::CreateText(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height, const char *text)
 {
-  return TEXT_CreateEx(x,y,width,height,parent,WM_CF_SHOW,TEXT_CF_HCENTER|TEXT_CF_VCENTER,GUI_ID_TEXT0,text);
+  TEXT_Handle hText = TEXT_CreateEx(x,y,width,height,parent,WM_CF_SHOW
+      ,TEXT_CF_HCENTER|TEXT_CF_VCENTER,GUI_ID_TEXT0,text);
+  DBG_ASSERT(hText!=0);
+  return hText;
+
 }
 
 bool STemWinWindowManager::Execute()
@@ -48,11 +56,21 @@ int32_t STemWinWindowManager::CreateButton(
     int32_t width, int32_t height, const char *text,
     IButtonEventHandler *buttonEventHandler)
 {
-  BUTTON_Handle hButton = BUTTON_CreateEx(x, y, width, height, parent, WM_CF_SHOW, 0, GUI_ID_BUTTON0);
-  BUTTON_SetText(hButton, text);
-  buttonEventHandlers[buttonHandlersCount].buttonHandle = hButton;
-  buttonEventHandlers[buttonHandlersCount].buttonEventHandler = buttonEventHandler;
-  buttonHandlersCount++;
+  BUTTON_Handle hButton = 0;
+  if(buttonHandlersCount<MAX_BUTTONS_TOTAL-1)
+  {
+    hButton = BUTTON_CreateEx(x, y, width, height, parent, WM_CF_SHOW, 0, GUI_ID_BUTTON0);
+    DBG_ASSERT(hButton!=0);
+    BUTTON_SetText(hButton, text);
+
+    buttonEventHandlers[buttonHandlersCount].buttonHandle = hButton;
+    buttonEventHandlers[buttonHandlersCount].buttonEventHandler = buttonEventHandler;
+    buttonHandlersCount++;
+  }
+  else
+  {
+    DBG_ASSERT(buttonHandlersCount<MAX_BUTTONS_TOTAL-1);
+  }
   return hButton;
 }
 
@@ -61,6 +79,8 @@ int32_t STemWinWindowManager::CreateListView(int32_t parent, int32_t x,
 {
   LISTVIEW_Handle hList = LISTVIEW_CreateEx(x, y, width, height,
       parent, WM_CF_SHOW, 0, GUI_ID_LISTVIEW0);
+  DBG_ASSERT(hList!=0);
+  LISTVIEW_SetRowHeight(hList, LISTVIEW_ROW_HEIGHT+10);
   HEADER_Handle hHeader = LISTVIEW_GetHeader(hList);
 
   HEADER_SetDragLimit(hHeader,1);
@@ -81,6 +101,7 @@ int32_t STemWinWindowManager::CreateEdit(int32_t hParent, int32_t x, int32_t y,
     int32_t width, int32_t height, int32_t textLength, const char *text)
 {
   EDIT_Handle hEdit = EDIT_CreateEx(x,y,width,height,hParent,WM_CF_SHOW,0,GUI_ID_EDIT0, textLength);
+  DBG_ASSERT(hEdit!=0);
   EDIT_SetText(hEdit, text);
   return hEdit;
 }
@@ -107,6 +128,12 @@ int32_t STemWinWindowManager::CreateComboBox(int32_t hParent, int32_t x, int32_t
 {
   DROPDOWN_Handle hComboBox = DROPDOWN_CreateEx(x, y, width, height, hParent,
       WM_CF_SHOW,DROPDOWN_CF_AUTOSCROLLBAR,GUI_ID_DROPDOWN0);
+
+  DBG_ASSERT(hComboBox!=0);
+
+  DROPDOWN_SetTextHeight(hComboBox,19);
+  DROPDOWN_SetTextAlign(hComboBox,TEXT_CF_VCENTER | TEXT_CF_LEFT);
+  DROPDOWN_SetItemSpacing(hComboBox,10);
 
   for (int32_t i=0; i<itemsCount; i++)
   {

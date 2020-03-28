@@ -18,6 +18,12 @@ typedef struct
 
 typedef struct
 {
+  int32_t windowHandle;
+  IClickEventHandler *clickWindowHandler;
+} ClickHandlerItem;
+
+typedef struct
+{
   HWND textHandle;
   HWND parent;
   HBRUSH hBrush;
@@ -46,6 +52,8 @@ private:
   static ButtonHandlerItem buttonEventHandlers[MAX_BUTTONS_TOTAL];
   static uint32_t paintHandlersCount;
   static PaintHandlerItem paintEventHandlers[MAX_WINDOWS_COUNT];
+  static uint32_t clickHandlersCount;
+  static ClickHandlerItem clickEventHandlers[MAX_WINDOWS_COUNT];
   static uint32_t windowsCount;
   static HWND windowHandles[MAX_WINDOWS_COUNT];
   static HDC currentHdc;
@@ -58,6 +66,7 @@ private:
 
   static void buttonClicked(int32_t buttonHandle);
   static void paintWindow(int32_t windowHandle);
+  static void clickWindow(int32_t windowHandle, int32_t x, int32_t y);
   void createMainWindow();
 public:
   explicit WinApi_Wmal(HINSTANCE appInstance);
@@ -66,6 +75,7 @@ public:
   virtual void Init(int32_t width, int32_t height);
   virtual int32_t CreateWin(int32_t x, int32_t y, int32_t width, int32_t height) override;
   virtual void AssignPaintCallback(int32_t windowHandle, IPaintEventHandler *paintEventHandler) override;
+  virtual void AssignClickCallback(int32_t windowHandle, IClickEventHandler *clickEventHandler) override;
   virtual void DrawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1) override;
   virtual int32_t CreateText(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height, const char *text) override;
   virtual int32_t CreateButton(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height, const char *text, IButtonEventHandler *buttonEventHandler) override;

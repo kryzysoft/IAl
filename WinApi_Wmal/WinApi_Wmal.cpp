@@ -1,6 +1,7 @@
 #include "WinApi_Wmal.h"
 #include "strings.h"
 #include "DebugLog.h"
+#include "windowsx.h"
 #include <commctrl.h>
 
 uint32_t WinApi_Wmal::buttonHandlersCount = 0;
@@ -8,6 +9,9 @@ ButtonHandlerItem WinApi_Wmal::buttonEventHandlers[MAX_BUTTONS_TOTAL];
 
 uint32_t WinApi_Wmal::paintHandlersCount = 0;
 PaintHandlerItem WinApi_Wmal::paintEventHandlers[MAX_WINDOWS_COUNT];
+
+uint32_t WinApi_Wmal::clickHandlersCount = 0;
+ClickHandlerItem WinApi_Wmal::clickEventHandlers[MAX_WINDOWS_COUNT];
 
 uint32_t WinApi_Wmal::windowsCount = 0;
 HWND WinApi_Wmal::windowHandles[MAX_WINDOWS_COUNT];
@@ -238,6 +242,14 @@ void WinApi_Wmal::AssignPaintCallback(int32_t windowHandle, IPaintEventHandler *
   paintHandlersCount++;
 }
 
+void WinApi_Wmal::AssignClickCallback(int32_t windowHandle, IClickEventHandler *clickEventHandler)
+{
+  DBG_ASSERT(clickHandlersCount < MAX_WINDOWS_COUNT);
+  clickEventHandlers[clickHandlersCount].clickWindowHandler = clickEventHandler;
+  clickEventHandlers[clickHandlersCount].windowHandle = windowHandle;
+  clickHandlersCount++;
+}
+
 int32_t WinApi_Wmal::CreateListView(int32_t parent, int32_t x,
     int32_t y, int32_t width, int32_t height)
 {
@@ -393,10 +405,25 @@ void WinApi_Wmal::paintWindow(int32_t windowHandle)
   }
 }
 
+void WinApi_Wmal::clickWindow(int32_t windowHandle, int32_t x, int32_t y)
+{
+  for(uint32_t i=0; i<clickHandlersCount; i++)
+  {
+    if(clickEventHandlers[i].windowHandle == windowHandle)
+    {
+      DBG_ASSERT(clickEventHandlers[i].clickWindowHandler != NULL);
+      clickEventHandlers[i].clickWindowHandler->ClickEventHandler(windowHandle, x, y);
+      break;
+    }
+  }
+}
+
 LRESULT CALLBACK WinApi_Wmal::eventHandler( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
   bool destroyResult;
   LRESULT lr = 0;
+  int32_t xPos = 0;
+  int32_t yPos = 0;
   switch( msg )
   {
     case WM_CLOSE:
@@ -426,6 +453,12 @@ LRESULT CALLBACK WinApi_Wmal::eventHandler( HWND hwnd, UINT msg, WPARAM wParam, 
 
     case WM_PAINT:
       paintWindow((int32_t)hwnd);
+      break;
+
+    case WM_LBUTTONDOWN:
+      xPos = GET_X_LPARAM(lParam);
+      yPos = GET_Y_LPARAM(lParam);
+      clickWindow((int32_t)hwnd, xPos, yPos);
       break;
 
 

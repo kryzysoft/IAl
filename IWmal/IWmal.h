@@ -3,6 +3,11 @@
 
 #include "stdint.h"
 
+class IClickEventHandler
+{
+public:
+  virtual void ClickEventHandler(int32_t windowHandle, int32_t x, int32_t y) = 0;
+};
 
 class IButtonEventHandler
 {
@@ -21,6 +26,7 @@ class IWmal
 public:
   virtual int32_t CreateWin(int32_t x, int32_t y, int32_t width, int32_t height) = 0;
   virtual void AssignPaintCallback(int32_t windowHandle, IPaintEventHandler *paintEventHandler) = 0;
+  virtual void AssignClickCallback(int32_t windowHandle, IClickEventHandler *clickEventHandler) = 0;
   virtual void DrawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1) = 0;
   virtual int32_t CreateText(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height, const char *text) = 0;
   virtual int32_t CreateButton(

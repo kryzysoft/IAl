@@ -364,6 +364,18 @@ void WinApi_Wmal::Hide(int32_t windowHandle)
   ShowWindow((HWND)windowHandle, SW_HIDE);
 }
 
+void WinApi_Wmal::InvalidateWindow(int32_t windowHandle)
+{
+  RECT rect;
+  bool result = false;
+  result = GetClientRect((HWND)windowHandle, &rect);
+  DBG_ASSERT(result);
+  result = InvalidateRect((HWND)windowHandle, &rect, false);
+  DBG_ASSERT(result);
+  result = UpdateWindow((HWND)windowHandle);
+  DBG_ASSERT(result);
+}
+
 void WinApi_Wmal::buttonClicked(int32_t buttonHandle)
 {
   for(uint32_t i=0; i<buttonHandlersCount; i++)
@@ -397,6 +409,15 @@ void WinApi_Wmal::paintWindow(int32_t windowHandle)
       currentHdc = BeginPaint((HWND)windowHandle, &ps);
       DBG_ASSERT(currentHdc != NULL);
       paintInProgress = true;
+      RECT rect;
+      GetWindowRect((HWND)windowHandle,&rect);
+      rect.right = rect.right - rect.left;
+      rect.bottom = rect.bottom - rect.top;
+      rect.left = 0;
+      rect.top = 0;
+      HBRUSH hBrush = CreateSolidBrush(DEFAULT_BK_COLOR);
+      FillRect(currentHdc,&rect,hBrush);
+      DeleteObject(hBrush);
       paintEventHandlers[i].paintWindowHandler->PaintEventHandler(windowHandle);
       paintInProgress = false;
       EndPaint((HWND)windowHandle, &ps);
@@ -460,8 +481,6 @@ LRESULT CALLBACK WinApi_Wmal::eventHandler( HWND hwnd, UINT msg, WPARAM wParam, 
       yPos = GET_Y_LPARAM(lParam);
       clickWindow((int32_t)hwnd, xPos, yPos);
       break;
-
-
     default:
         return DefWindowProc( hwnd, msg, wParam, lParam );
     break;

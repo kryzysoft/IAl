@@ -53,6 +53,7 @@ public:
   virtual int32_t GetHeight() = 0;
   virtual void Touch(int32_t x, int32_t y) = 0;
   virtual void Untouch() = 0;
+  virtual void InvalidateWindow(int32_t windowHandle) = 0;
   virtual void Show(int32_t windowHandle) = 0;
   virtual void Hide(int32_t windowHandle) = 0;
   virtual ~IWmal(){};

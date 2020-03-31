@@ -98,6 +98,7 @@ public:
   virtual void Untouch() override;
   virtual void Show(int32_t windowHandle) override;
   virtual void Hide(int32_t windowHandle) override;
+  virtual void InvalidateWindow(int32_t windowHandle) override;
   virtual bool Execute() override;
 };
 

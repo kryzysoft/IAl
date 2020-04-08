@@ -40,7 +40,7 @@ private:
   int32_t m_width;
   int32_t m_height;
   static bool paintInProgress;
-  HFONT m_hFont;
+  static HFONT m_hFont;
 
   static const uint32_t MAX_BUTTONS_TOTAL = 100;
   static const uint32_t LISTVIEW_ROW_HEIGHT = 20;
@@ -77,6 +77,7 @@ public:
   virtual void AssignPaintCallback(int32_t windowHandle, IPaintEventHandler *paintEventHandler) override;
   virtual void AssignClickCallback(int32_t windowHandle, IClickEventHandler *clickEventHandler) override;
   virtual void DrawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1) override;
+  virtual void DrawTextHvCenter(int32_t x0, int32_t y0, const char *text) override;
   virtual int32_t CreateText(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height, const char *text) override;
   virtual int32_t CreateButton(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height, const char *text, IButtonEventHandler *buttonEventHandler) override;
   virtual int32_t CreateListView(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height) override;

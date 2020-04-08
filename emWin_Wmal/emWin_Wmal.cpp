@@ -6,6 +6,12 @@
 uint32_t STemWinWindowManager::buttonHandlersCount;
 ButtonHandlerItem STemWinWindowManager::buttonEventHandlers[MAX_BUTTONS_TOTAL];
 
+uint32_t STemWinWindowManager::paintHandlersCount = 0;
+PaintHandlerItem STemWinWindowManager::paintEventHandlers[MAX_WINDOWS_COUNT];
+
+uint32_t STemWinWindowManager::clickHandlersCount = 0;
+ClickHandlerItem STemWinWindowManager::clickEventHandlers[MAX_WINDOWS_COUNT];
+
 STemWinWindowManager::STemWinWindowManager():
   m_width(0),
   m_height(0)
@@ -193,8 +199,23 @@ void STemWinWindowManager::eventHandler(WM_MESSAGE * pMsg)
         buttonClicked(pMsg->hWinSrc);
       }
       break;
+    case WM_PID_STATE_CHANGED:
+      {
+        const WM_PID_STATE_CHANGED_INFO *pidState = (WM_PID_STATE_CHANGED_INFO*)pMsg->Data.p;
+        if((pidState->State > 0)&&(pidState->StatePrev == 0))
+        {
+          int32_t x = pidState->x;
+          int32_t y = pidState->y;
+          ClickWindow(pMsg->hWin,x,y);
+        }
+      }
+      break;
+    case WM_PAINT:
+      PaintWindow(pMsg->hWin);
+      break;
     default:
       WM_DefaultProc(pMsg);
+      break;
   }
 }
 
@@ -209,6 +230,39 @@ void STemWinWindowManager::Hide(int32_t windowHandle)
   WM_HideWindow(windowHandle);
 }
 
+void STemWinWindowManager::AssignPaintCallback(int32_t windowHandle, IPaintEventHandler *paintEventHandler)
+{
+  DBG_ASSERT(paintHandlersCount < MAX_WINDOWS_COUNT);
+  paintEventHandlers[paintHandlersCount].paintWindowHandler = paintEventHandler;
+  paintEventHandlers[paintHandlersCount].windowHandle = windowHandle;
+  paintHandlersCount++;
+}
+
+void STemWinWindowManager::AssignClickCallback(int32_t windowHandle, IClickEventHandler *clickEventHandler)
+{
+  DBG_ASSERT(clickHandlersCount < MAX_WINDOWS_COUNT);
+  clickEventHandlers[clickHandlersCount].clickWindowHandler = clickEventHandler;
+  clickEventHandlers[clickHandlersCount].windowHandle = windowHandle;
+  clickHandlersCount++;
+}
+
+void STemWinWindowManager::DrawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
+{
+  GUI_DrawLine(x0, y0, x1, y1);
+}
+
+void STemWinWindowManager::DrawTextHvCenter(int32_t x0, int32_t y0, const char *text)
+{
+  GUI_SetTextAlign(GUI_TA_HCENTER | GUI_TA_VCENTER);
+  GUI_SetTextMode(GUI_TM_TRANS);
+  GUI_DispStringAt(text, x0, y0);
+}
+
+void STemWinWindowManager::InvalidateWindow(int32_t windowHandle)
+{
+  WM_InvalidateWindow(windowHandle);
+}
+
 void STemWinWindowManager::buttonClicked(int32_t buttonHandle)
 {
   for(uint32_t i=0; i<buttonHandlersCount; i++)
@@ -221,4 +275,30 @@ void STemWinWindowManager::buttonClicked(int32_t buttonHandle)
   }
 }
 
+void STemWinWindowManager::ClickWindow(int32_t windowHandle, int32_t x, int32_t y)
+{
+  for(uint32_t i=0; i<clickHandlersCount; i++)
+  {
+    if(clickEventHandlers[i].windowHandle == windowHandle)
+    {
+      DBG_ASSERT(clickEventHandlers[i].clickWindowHandler != NULL);
+      clickEventHandlers[i].clickWindowHandler->ClickEventHandler(windowHandle, x, y);
+      break;
+    }
+  }
+}
 
+void STemWinWindowManager::PaintWindow(int32_t windowHandle)
+{
+  GUI_SetColor(GUI_BLACK);
+  for(uint32_t i=0; i<paintHandlersCount; i++)
+  {
+    if(paintEventHandlers[i].windowHandle == windowHandle)
+    {
+      DBG_ASSERT(paintEventHandlers[i].paintWindowHandler != NULL);
+      GUI_Clear();
+      paintEventHandlers[i].paintWindowHandler->PaintEventHandler(windowHandle);
+      break;
+    }
+  }
+}

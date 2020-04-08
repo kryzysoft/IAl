@@ -19,6 +19,8 @@ HWND WinApi_Wmal::windowHandles[MAX_WINDOWS_COUNT];
 uint32_t WinApi_Wmal::textsCount = 0;
 TextStruct WinApi_Wmal::textStructs[MAX_STATIC_TEXTS];
 
+HFONT WinApi_Wmal::m_hFont;
+
 bool WinApi_Wmal::paintInProgress = false;
 
 HDC WinApi_Wmal::currentHdc;
@@ -391,11 +393,26 @@ void WinApi_Wmal::buttonClicked(int32_t buttonHandle)
 
 void WinApi_Wmal::DrawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 {
+
   DBG_ASSERT(paintInProgress == true);
   bool result = MoveToEx(currentHdc, x0, y0, NULL);
   DBG_ASSERT(result == true);
   result = LineTo(currentHdc, x1, y1);
   DBG_ASSERT(result == true);
+}
+
+void WinApi_Wmal::DrawTextHvCenter(int32_t x0, int32_t y0, const char *text)
+{
+  DBG_ASSERT(paintInProgress == true);
+  int32_t result = SetBkMode(currentHdc, TRANSPARENT);
+  DBG_ASSERT(result!=0);
+  RECT rect;
+  rect.left = x0;
+  rect.right = x0;
+  rect.top = y0;
+  rect.bottom = y0;
+  result = DrawText(currentHdc, text, -1, &rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOCLIP);
+  DBG_ASSERT(result > 0);
 }
 
 void WinApi_Wmal::paintWindow(int32_t windowHandle)
@@ -408,6 +425,8 @@ void WinApi_Wmal::paintWindow(int32_t windowHandle)
       PAINTSTRUCT ps;
       currentHdc = BeginPaint((HWND)windowHandle, &ps);
       DBG_ASSERT(currentHdc != NULL);
+      HGDIOBJ hGdiObj = SelectObject( currentHdc, m_hFont );
+      DBG_ASSERT(hGdiObj!=NULL);
       paintInProgress = true;
       RECT rect;
       GetWindowRect((HWND)windowHandle,&rect);

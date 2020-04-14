@@ -64,9 +64,11 @@ private:
   HWND m_hMainWindow;
   bool m_mainWindowCreated;
 
+  HBRUSH m_hBkBrush;
+
   static void buttonClicked(int32_t buttonHandle);
-  static void paintWindow(int32_t windowHandle);
-  static void clickWindow(int32_t windowHandle, int32_t x, int32_t y);
+  static bool paintWindow(int32_t windowHandle);
+  static bool clickWindow(int32_t windowHandle, int32_t x, int32_t y);
   void createMainWindow();
 public:
   explicit WinApi_Wmal(HINSTANCE appInstance);

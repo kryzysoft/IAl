@@ -57,12 +57,14 @@ WinApi_Wmal::WinApi_Wmal(HINSTANCE appInstance):
   DBG_ASSERT(wc.hIcon!=NULL);
   wc.hCursor = LoadCursor( NULL, IDC_ARROW );
   DBG_ASSERT(wc.hCursor!=NULL);
-  wc.hbrBackground =( HBRUSH )( COLOR_WINDOW + 1 );
+
   wc.lpszMenuName = NULL;
   wc.lpszClassName = "NewWinApi_WmalWindow";
   wc.hIconSm = LoadIcon( NULL, IDI_APPLICATION );
-  wc.hbrBackground = CreateSolidBrush(DEFAULT_BK_COLOR);
   DBG_ASSERT(wc.hIconSm!=NULL);
+  m_hBkBrush = CreateSolidBrush(DEFAULT_BK_COLOR);
+  DBG_ASSERT(m_hBkBrush!=NULL);
+  wc.hbrBackground = m_hBkBrush;
 
   int32_t registerClassResult = RegisterClassEx(&wc);
   DBG_ASSERT((registerClassResult != 0));
@@ -415,8 +417,9 @@ void WinApi_Wmal::DrawTextHvCenter(int32_t x0, int32_t y0, const char *text)
   DBG_ASSERT(result > 0);
 }
 
-void WinApi_Wmal::paintWindow(int32_t windowHandle)
+bool WinApi_Wmal::paintWindow(int32_t windowHandle)
 {
+  bool retVal = false;
   for(uint32_t i=0; i<paintHandlersCount; i++)
   {
     if(paintEventHandlers[i].windowHandle == windowHandle)
@@ -440,22 +443,27 @@ void WinApi_Wmal::paintWindow(int32_t windowHandle)
       paintEventHandlers[i].paintWindowHandler->PaintEventHandler(windowHandle);
       paintInProgress = false;
       EndPaint((HWND)windowHandle, &ps);
+      retVal = true;
       break;
     }
   }
+  return retVal;
 }
 
-void WinApi_Wmal::clickWindow(int32_t windowHandle, int32_t x, int32_t y)
+bool WinApi_Wmal::clickWindow(int32_t windowHandle, int32_t x, int32_t y)
 {
+  bool retVal = false;
   for(uint32_t i=0; i<clickHandlersCount; i++)
   {
     if(clickEventHandlers[i].windowHandle == windowHandle)
     {
       DBG_ASSERT(clickEventHandlers[i].clickWindowHandler != NULL);
       clickEventHandlers[i].clickWindowHandler->ClickEventHandler(windowHandle, x, y);
+      retVal = true;
       break;
     }
   }
+  return retVal;
 }
 
 LRESULT CALLBACK WinApi_Wmal::eventHandler( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
@@ -488,20 +496,30 @@ LRESULT CALLBACK WinApi_Wmal::eventHandler( HWND hwnd, UINT msg, WPARAM wParam, 
     break;
 
     case WM_COMMAND:
+      printf("wmcommand\r\n");
+      printf("lbutton:%x\r\n",(uint32_t)hwnd);
       buttonClicked(lParam);
     break;
 
     case WM_PAINT:
-      paintWindow((int32_t)hwnd);
+      if(!paintWindow((int32_t)hwnd))
+      {
+        lr = DefWindowProc( hwnd, msg, wParam, lParam );
+      }
       break;
 
     case WM_LBUTTONDOWN:
+      printf("lbutton:%x\r\n",(uint32_t)lParam);
+
       xPos = GET_X_LPARAM(lParam);
       yPos = GET_Y_LPARAM(lParam);
-      clickWindow((int32_t)hwnd, xPos, yPos);
+      if(!clickWindow((int32_t)hwnd, xPos, yPos))
+      {
+        lr = DefWindowProc( hwnd, msg, wParam, lParam );
+      }
       break;
     default:
-        return DefWindowProc( hwnd, msg, wParam, lParam );
+        lr = DefWindowProc( hwnd, msg, wParam, lParam );
     break;
   }
 
@@ -510,10 +528,14 @@ LRESULT CALLBACK WinApi_Wmal::eventHandler( HWND hwnd, UINT msg, WPARAM wParam, 
 
 WinApi_Wmal::~WinApi_Wmal()
 {
+  int32_t deleteResult;
   for(uint32_t i=0; i<textsCount; i++)
   {
-    int32_t deleteResult = DeleteObject(textStructs[i].hBrush);
+    deleteResult = DeleteObject(textStructs[i].hBrush);
     DBG_ASSERT(deleteResult != 0);
   }
-  DeleteObject(m_hFont);
+  deleteResult = DeleteObject(m_hFont);
+  DBG_ASSERT(deleteResult != 0);
+  deleteResult = DeleteObject(m_hBkBrush);
+  DBG_ASSERT(deleteResult != 0);
 }

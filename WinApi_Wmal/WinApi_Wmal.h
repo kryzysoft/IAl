@@ -82,6 +82,7 @@ public:
   virtual void DrawTextHvCenter(int32_t x0, int32_t y0, const char *text) override;
   virtual int32_t CreateText(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height, const char *text) override;
   virtual int32_t CreateButton(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height, const char *text, IButtonEventHandler *buttonEventHandler) override;
+  virtual bool IsButtonPressed(int32_t buttonHandle) override;
   virtual int32_t CreateListView(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height) override;
   virtual void AddColumnToListView(int32_t listViewHandle, int32_t size, const char *name) override;
   virtual void AddRowToListView(int32_t listViewHandle, const char **row) override;

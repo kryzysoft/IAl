@@ -237,6 +237,10 @@ int32_t WinApi_Wmal::CreateButton(
   return (int32_t)hwndButton;
 }
 
+bool WinApi_Wmal::IsButtonPressed(int32_t buttonHandle)
+{
+  return ((Button_GetState((HWND)buttonHandle) & BST_PUSHED)!=0);
+}
 
 void WinApi_Wmal::AssignPaintCallback(int32_t windowHandle, IPaintEventHandler *paintEventHandler)
 {
@@ -386,8 +390,10 @@ void WinApi_Wmal::buttonClicked(int32_t buttonHandle)
   {
     if(buttonEventHandlers[i].buttonHandle == buttonHandle)
     {
-      DBG_ASSERT(buttonEventHandlers[i].buttonEventHandler != NULL);
-      buttonEventHandlers[i].buttonEventHandler->ButtonEventHandler(buttonHandle);
+      if(buttonEventHandlers[i].buttonEventHandler!=NULL)
+      {
+        buttonEventHandlers[i].buttonEventHandler->ButtonEventHandler(buttonHandle);
+      }
       break;
     }
   }
@@ -496,8 +502,7 @@ LRESULT CALLBACK WinApi_Wmal::eventHandler( HWND hwnd, UINT msg, WPARAM wParam, 
     break;
 
     case WM_COMMAND:
-      printf("wmcommand\r\n");
-      printf("lbutton:%x\r\n",(uint32_t)hwnd);
+      printf("wm_command\r\n");
       buttonClicked(lParam);
     break;
 
@@ -509,8 +514,6 @@ LRESULT CALLBACK WinApi_Wmal::eventHandler( HWND hwnd, UINT msg, WPARAM wParam, 
       break;
 
     case WM_LBUTTONDOWN:
-      printf("lbutton:%x\r\n",(uint32_t)lParam);
-
       xPos = GET_X_LPARAM(lParam);
       yPos = GET_Y_LPARAM(lParam);
       if(!clickWindow((int32_t)hwnd, xPos, yPos))

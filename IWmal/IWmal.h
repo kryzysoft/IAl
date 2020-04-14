@@ -34,6 +34,7 @@ public:
       int32_t parent, int32_t x, int32_t y,
       int32_t width, int32_t height, const char *text,
       IButtonEventHandler *buttonEventHandler) = 0;
+  virtual bool IsButtonPressed(int32_t buttonHandle) = 0;
   virtual int32_t CreateListView(int32_t parent, int32_t x, int32_t y,
       int32_t width, int32_t height) = 0;
   virtual void AddColumnToListView(int32_t listViewHandle, int32_t size,

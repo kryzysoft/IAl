@@ -502,7 +502,6 @@ LRESULT CALLBACK WinApi_Wmal::eventHandler( HWND hwnd, UINT msg, WPARAM wParam, 
     break;
 
     case WM_COMMAND:
-      printf("wm_command\r\n");
       buttonClicked(lParam);
     break;
 

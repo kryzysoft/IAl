@@ -132,6 +132,11 @@ int32_t WinApi_Wmal::CreateWin(int32_t x, int32_t y, int32_t width, int32_t heig
   return (int32_t)hwnd;
 }
 
+int32_t WinApi_Wmal::CreateWinMaximized()
+{
+  return CreateWin(0,0,m_width,m_height);
+}
+
 int32_t WinApi_Wmal::GetWidth()
 {
   return m_width;

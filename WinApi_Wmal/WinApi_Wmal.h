@@ -76,6 +76,7 @@ public:
 
   virtual void Init(int32_t width, int32_t height);
   virtual int32_t CreateWin(int32_t x, int32_t y, int32_t width, int32_t height) override;
+  virtual int32_t CreateWinMaximized() override;
   virtual void AssignPaintCallback(int32_t windowHandle, IPaintEventHandler *paintEventHandler) override;
   virtual void AssignClickCallback(int32_t windowHandle, IClickEventHandler *clickEventHandler) override;
   virtual void DrawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1) override;

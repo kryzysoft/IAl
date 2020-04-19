@@ -49,7 +49,7 @@ WinApi_Wmal::WinApi_Wmal(HINSTANCE appInstance):
   WNDCLASSEX wc;
   wc.cbSize = sizeof( WNDCLASSEX );
   wc.style = 0;
-  wc.lpfnWndProc = eventHandler;
+  wc.lpfnWndProc = EventHandler;
   wc.cbClsExtra = 0;
   wc.cbWndExtra = 0;
   wc.hInstance = m_appInstance;
@@ -79,7 +79,7 @@ void WinApi_Wmal::Init(int32_t width, int32_t height)
 
 }
 
-void WinApi_Wmal::createMainWindow()
+void WinApi_Wmal::CreateMainWindow()
 {
   RECT rect;
   rect.left = 0;
@@ -107,7 +107,7 @@ int32_t WinApi_Wmal::CreateWin(int32_t x, int32_t y, int32_t width, int32_t heig
 {
   if(!m_mainWindowCreated)
   {
-    createMainWindow();
+    CreateMainWindow();
   }
   RECT rect;
   rect.left = 0;
@@ -132,6 +132,13 @@ int32_t WinApi_Wmal::CreateWin(int32_t x, int32_t y, int32_t width, int32_t heig
   return (int32_t)hwnd;
 }
 
+void WinApi_Wmal::DeleteControl(int32_t handle)
+{
+  bool retVal = DestroyWindow((HWND)handle);
+  DBG_ASSERT(retVal);
+}
+
+
 int32_t WinApi_Wmal::CreateWinMaximized()
 {
   return CreateWin(0,0,m_width,m_height);
@@ -139,11 +146,13 @@ int32_t WinApi_Wmal::CreateWinMaximized()
 
 int32_t WinApi_Wmal::GetWidth()
 {
+  DBG_ASSERT(m_width>0);
   return m_width;
 }
 
 int32_t WinApi_Wmal::GetHeight()
 {
+  DBG_ASSERT(m_height>0);
   return m_height;
 }
 
@@ -163,6 +172,11 @@ int32_t WinApi_Wmal::CreateText(int32_t parent, int32_t x, int32_t y, int32_t wi
   DBG_ASSERT(textsCount<MAX_STATIC_TEXTS);
 
   return (int32_t)hStatic;
+}
+
+void WinApi_Wmal::SetTextText(int32_t handle, const char *text)
+{
+  SetWindowText((HWND)handle, text);
 }
 
 void WinApi_Wmal::SetTextBkColor(int32_t textHandle, uint32_t color)
@@ -210,16 +224,23 @@ void WinApi_Wmal::SetComboBoxSelection(int32_t comboBoxHandle, int32_t selection
 bool WinApi_Wmal::Execute()
 {
   MSG msg;
-  if(GetMessage(&msg, NULL, 0, 0 ))
+  if(PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
   {
+    bool done = false;
+    if(msg.message == WM_QUIT)
+    {
+      done = true;
+    }
+
     TranslateMessage(&msg);
     DispatchMessage(&msg);
-    return true;
+
+    if(done)
+    {
+      return false;
+    }
   }
-  else
-  {
-    return false;
-  }
+  return true;
 }
 
 int32_t WinApi_Wmal::CreateButton(
@@ -240,6 +261,11 @@ int32_t WinApi_Wmal::CreateButton(
   buttonHandlersCount++;
   DBG_ASSERT(buttonHandlersCount < MAX_BUTTONS_TOTAL);
   return (int32_t)hwndButton;
+}
+
+void WinApi_Wmal::SetButtonText(int32_t handle, const char *text)
+{
+  SetWindowText((HWND)handle, text);
 }
 
 bool WinApi_Wmal::IsButtonPressed(int32_t buttonHandle)
@@ -389,7 +415,7 @@ void WinApi_Wmal::InvalidateWindow(int32_t windowHandle)
   DBG_ASSERT(result);
 }
 
-void WinApi_Wmal::buttonClicked(int32_t buttonHandle)
+void WinApi_Wmal::ButtonClicked(int32_t buttonHandle)
 {
   for(uint32_t i=0; i<buttonHandlersCount; i++)
   {
@@ -428,7 +454,7 @@ void WinApi_Wmal::DrawTextHvCenter(int32_t x0, int32_t y0, const char *text)
   DBG_ASSERT(result > 0);
 }
 
-bool WinApi_Wmal::paintWindow(int32_t windowHandle)
+bool WinApi_Wmal::PaintWindow(int32_t windowHandle)
 {
   bool retVal = false;
   for(uint32_t i=0; i<paintHandlersCount; i++)
@@ -461,7 +487,7 @@ bool WinApi_Wmal::paintWindow(int32_t windowHandle)
   return retVal;
 }
 
-bool WinApi_Wmal::clickWindow(int32_t windowHandle, int32_t x, int32_t y)
+bool WinApi_Wmal::ClickWindow(int32_t windowHandle, int32_t x, int32_t y)
 {
   bool retVal = false;
   for(uint32_t i=0; i<clickHandlersCount; i++)
@@ -477,12 +503,13 @@ bool WinApi_Wmal::clickWindow(int32_t windowHandle, int32_t x, int32_t y)
   return retVal;
 }
 
-LRESULT CALLBACK WinApi_Wmal::eventHandler( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
+LRESULT CALLBACK WinApi_Wmal::EventHandler( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam )
 {
   bool destroyResult;
   LRESULT lr = 0;
   int32_t xPos = 0;
   int32_t yPos = 0;
+
   switch( msg )
   {
     case WM_CLOSE:
@@ -507,11 +534,10 @@ LRESULT CALLBACK WinApi_Wmal::eventHandler( HWND hwnd, UINT msg, WPARAM wParam, 
     break;
 
     case WM_COMMAND:
-      buttonClicked(lParam);
+      ButtonClicked(lParam);
     break;
-
     case WM_PAINT:
-      if(!paintWindow((int32_t)hwnd))
+      if(!PaintWindow((int32_t)hwnd))
       {
         lr = DefWindowProc( hwnd, msg, wParam, lParam );
       }
@@ -520,7 +546,7 @@ LRESULT CALLBACK WinApi_Wmal::eventHandler( HWND hwnd, UINT msg, WPARAM wParam, 
     case WM_LBUTTONDOWN:
       xPos = GET_X_LPARAM(lParam);
       yPos = GET_Y_LPARAM(lParam);
-      if(!clickWindow((int32_t)hwnd, xPos, yPos))
+      if(!ClickWindow((int32_t)hwnd, xPos, yPos))
       {
         lr = DefWindowProc( hwnd, msg, wParam, lParam );
       }

@@ -36,7 +36,7 @@ private:
   WinApi_Wmal(){};
   HINSTANCE m_appInstance;
 
-  static LRESULT CALLBACK eventHandler( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
+  static LRESULT CALLBACK EventHandler( HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam );
   int32_t m_width;
   int32_t m_height;
   static bool paintInProgress;
@@ -66,23 +66,26 @@ private:
 
   HBRUSH m_hBkBrush;
 
-  static void buttonClicked(int32_t buttonHandle);
-  static bool paintWindow(int32_t windowHandle);
-  static bool clickWindow(int32_t windowHandle, int32_t x, int32_t y);
-  void createMainWindow();
+  static void ButtonClicked(int32_t buttonHandle);
+  static bool PaintWindow(int32_t windowHandle);
+  static bool ClickWindow(int32_t windowHandle, int32_t x, int32_t y);
+  void CreateMainWindow();
 public:
   explicit WinApi_Wmal(HINSTANCE appInstance);
   ~WinApi_Wmal();
 
   virtual void Init(int32_t width, int32_t height);
   virtual int32_t CreateWin(int32_t x, int32_t y, int32_t width, int32_t height) override;
+  virtual void DeleteControl(int32_t handle) override;
   virtual int32_t CreateWinMaximized() override;
   virtual void AssignPaintCallback(int32_t windowHandle, IPaintEventHandler *paintEventHandler) override;
   virtual void AssignClickCallback(int32_t windowHandle, IClickEventHandler *clickEventHandler) override;
   virtual void DrawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1) override;
   virtual void DrawTextHvCenter(int32_t x0, int32_t y0, const char *text) override;
   virtual int32_t CreateText(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height, const char *text) override;
+  virtual void SetTextText(int32_t handle, const char *text) override;
   virtual int32_t CreateButton(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height, const char *text, IButtonEventHandler *buttonEventHandler) override;
+  virtual void SetButtonText(int32_t handle, const char *text) override;
   virtual bool IsButtonPressed(int32_t buttonHandle) override;
   virtual int32_t CreateListView(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height) override;
   virtual void AddColumnToListView(int32_t listViewHandle, int32_t size, const char *name) override;

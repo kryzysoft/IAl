@@ -26,6 +26,58 @@ int32_t STemWinWindowManager::CreateWin(int32_t x, int32_t y, int32_t width, int
   return hWindow;
 }
 
+void STemWinWindowManager::DeleteControl(int32_t handle)
+{
+  WM_DeleteWindow(handle);
+  for(uint32_t i=0; i<buttonHandlersCount;i++)
+  {
+    if(buttonEventHandlers[i].buttonHandle == handle)
+    {
+      if(i<buttonHandlersCount-1)
+      {
+        buttonEventHandlers[i] = buttonEventHandlers[buttonHandlersCount-1];
+      }
+      buttonEventHandlers[buttonHandlersCount-1].buttonEventHandler = NULL;
+      buttonEventHandlers[buttonHandlersCount-1].buttonHandle = 0;
+      buttonHandlersCount--;
+      break;
+    }
+  }
+  for(uint32_t i=0; i<paintHandlersCount;i++)
+  {
+    if(paintEventHandlers[i].windowHandle == handle)
+    {
+      if(i<paintHandlersCount-1)
+      {
+        paintEventHandlers[i] = paintEventHandlers[paintHandlersCount-1];
+      }
+      paintEventHandlers[paintHandlersCount-1].paintWindowHandler = NULL;
+      paintEventHandlers[paintHandlersCount-1].windowHandle = 0;
+      paintHandlersCount--;
+      break;
+    }
+  }
+  for(uint32_t i=0; i<clickHandlersCount;i++)
+  {
+    if(clickEventHandlers[i].windowHandle == handle)
+    {
+      if(i<clickHandlersCount-1)
+      {
+        clickEventHandlers[i] = clickEventHandlers[clickHandlersCount-1];
+      }
+      clickEventHandlers[clickHandlersCount-1].clickWindowHandler = NULL;
+      clickEventHandlers[clickHandlersCount-1].windowHandle = 0;
+      clickHandlersCount--;
+      break;
+    }
+  }
+}
+
+int32_t STemWinWindowManager::CreateWinMaximized()
+{
+  return CreateWin(0, 0, m_width, m_height);
+}
+
 void STemWinWindowManager::Init(int32_t width, int32_t height)
 {
   m_width = width;
@@ -48,7 +100,11 @@ int32_t STemWinWindowManager::CreateText(int32_t parent, int32_t x, int32_t y, i
       ,TEXT_CF_HCENTER|TEXT_CF_VCENTER,GUI_ID_TEXT0,text);
   DBG_ASSERT(hText!=0);
   return hText;
+}
 
+void STemWinWindowManager::SetTextText(int32_t handle, const char *text)
+{
+  TEXT_SetText(handle, text);
 }
 
 bool STemWinWindowManager::Execute()
@@ -78,6 +134,16 @@ int32_t STemWinWindowManager::CreateButton(
     DBG_ASSERT(buttonHandlersCount<MAX_BUTTONS_TOTAL-1);
   }
   return hButton;
+}
+
+void STemWinWindowManager::SetButtonText(int32_t handle, const char *text)
+{
+  BUTTON_SetText(handle, text);
+}
+
+bool STemWinWindowManager::IsButtonPressed(int32_t buttonHandle)
+{
+  return BUTTON_IsPressed(buttonHandle);
 }
 
 int32_t STemWinWindowManager::CreateListView(int32_t parent, int32_t x,
@@ -197,6 +263,13 @@ void STemWinWindowManager::eventHandler(WM_MESSAGE * pMsg)
       if(pMsg->Data.v == WM_NOTIFICATION_RELEASED)
       {
         buttonClicked(pMsg->hWinSrc);
+      }
+      if(pMsg->Data.v == WM_NOTIFICATION_CLICKED)
+      {
+        const WM_PID_STATE_CHANGED_INFO *pidState = (WM_PID_STATE_CHANGED_INFO*)pMsg->Data.p;
+        int32_t x = pidState->x;
+        int32_t y = pidState->y;
+        ClickWindow(pMsg->MsgId,x,y);
       }
       break;
     case WM_PID_STATE_CHANGED:

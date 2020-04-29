@@ -44,7 +44,7 @@ private:
 
   static const uint32_t MAX_BUTTONS_TOTAL = 100;
   static const uint32_t LISTVIEW_ROW_HEIGHT = 20;
-  static const uint32_t MAX_WINDOWS_COUNT = 20;
+  static const uint32_t MAX_WINDOWS_COUNT = 30;
   static const uint32_t MAX_STATIC_TEXTS = 100;
   static const uint32_t DEFAULT_BK_COLOR = RGB(200,200,200);
 

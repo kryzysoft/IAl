@@ -28,6 +28,7 @@ typedef struct
   HWND parent;
   HBRUSH hBrush;
   uint32_t bkColor;
+  ITextClickEventHandler *textClickEventHandler;
 } TextStruct;
 
 class WinApi_Wmal: public IWmal
@@ -67,6 +68,7 @@ private:
   HBRUSH m_hBkBrush;
 
   static void ButtonClicked(int32_t buttonHandle);
+  static void TextClicked(int32_t textHandle);
   static bool PaintWindow(int32_t windowHandle);
   static bool ClickWindow(int32_t windowHandle, int32_t x, int32_t y);
   void CreateMainWindow();
@@ -79,10 +81,11 @@ public:
   virtual void DeleteControl(int32_t handle) override;
   virtual int32_t CreateWinMaximized() override;
   virtual void AssignPaintCallback(int32_t windowHandle, IPaintEventHandler *paintEventHandler) override;
-  virtual void AssignClickCallback(int32_t windowHandle, IClickEventHandler *clickEventHandler) override;
+  virtual void AssignWindowClickCallback(int32_t windowHandle, IClickEventHandler *clickEventHandler) override;
   virtual void DrawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1) override;
   virtual void DrawTextHvCenter(int32_t x0, int32_t y0, const char *text) override;
   virtual int32_t CreateText(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height, const char *text) override;
+  virtual void AssignTextClickCallback(int32_t textHandle, ITextClickEventHandler *textClickEventHandler) override;
   virtual void SetTextText(int32_t handle, const char *text) override;
   virtual int32_t CreateButton(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height, const char *text, IButtonEventHandler *buttonEventHandler) override;
   virtual void SetButtonText(int32_t handle, const char *text) override;

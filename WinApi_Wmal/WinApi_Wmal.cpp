@@ -134,6 +134,7 @@ int32_t WinApi_Wmal::CreateWin(int32_t x, int32_t y, int32_t width, int32_t heig
 
 void WinApi_Wmal::DeleteControl(int32_t handle)
 {
+  // Remove handle from all the lists
   bool retVal = DestroyWindow((HWND)handle);
   DBG_ASSERT(retVal);
 }
@@ -158,7 +159,7 @@ int32_t WinApi_Wmal::GetHeight()
 
 int32_t WinApi_Wmal::CreateText(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height, const char *text)
 {
-  HWND hStatic = CreateWindowEx( 0, WC_STATIC, NULL, WS_CHILD | WS_VISIBLE |
+  HWND hStatic = CreateWindowEx(0, WC_STATIC, NULL, WS_CHILD | WS_VISIBLE |
   SS_CENTER | WS_EX_CLIENTEDGE, x, y, width, height, (HWND)parent, NULL, m_appInstance, NULL );
 
   SetWindowText(hStatic, text);
@@ -167,6 +168,7 @@ int32_t WinApi_Wmal::CreateText(int32_t parent, int32_t x, int32_t y, int32_t wi
   textStructs[textsCount].bkColor = DEFAULT_BK_COLOR;
   textStructs[textsCount].parent = (HWND)parent;
   textStructs[textsCount].hBrush = CreateSolidBrush(DEFAULT_BK_COLOR);
+  textStructs[textsCount].textClickEventHandler = NULL;
   DBG_ASSERT(textStructs[textsCount].hBrush != NULL);
   textsCount++;
   DBG_ASSERT(textsCount<MAX_STATIC_TEXTS);
@@ -177,6 +179,18 @@ int32_t WinApi_Wmal::CreateText(int32_t parent, int32_t x, int32_t y, int32_t wi
 void WinApi_Wmal::SetTextText(int32_t handle, const char *text)
 {
   SetWindowText((HWND)handle, text);
+}
+
+void WinApi_Wmal::AssignTextClickCallback(int32_t textHandle, ITextClickEventHandler *textClickEventHandler)
+{
+  for(uint32_t i=0; i<textsCount; i++)
+  {
+    if(textStructs[i].textHandle == (HWND)textHandle)
+    {
+      textStructs[i].textClickEventHandler = textClickEventHandler;
+      SetWindowLong((HWND)textHandle, GWL_STYLE, WS_CHILD | WS_VISIBLE | SS_CENTER | WS_EX_CLIENTEDGE | SS_NOTIFY);
+    }
+  }
 }
 
 void WinApi_Wmal::SetTextBkColor(int32_t textHandle, uint32_t color)
@@ -281,7 +295,7 @@ void WinApi_Wmal::AssignPaintCallback(int32_t windowHandle, IPaintEventHandler *
   paintHandlersCount++;
 }
 
-void WinApi_Wmal::AssignClickCallback(int32_t windowHandle, IClickEventHandler *clickEventHandler)
+void WinApi_Wmal::AssignWindowClickCallback(int32_t windowHandle, IClickEventHandler *clickEventHandler)
 {
   DBG_ASSERT(clickHandlersCount < MAX_WINDOWS_COUNT);
   clickEventHandlers[clickHandlersCount].clickWindowHandler = clickEventHandler;
@@ -424,6 +438,22 @@ void WinApi_Wmal::ButtonClicked(int32_t buttonHandle)
       if(buttonEventHandlers[i].buttonEventHandler!=NULL)
       {
         buttonEventHandlers[i].buttonEventHandler->ButtonEventHandler(buttonHandle);
+
+      }
+      break;
+    }
+  }
+}
+
+void WinApi_Wmal::TextClicked(int32_t textHandle)
+{
+  for(uint32_t i=0; i<textsCount; i++)
+  {
+    if(textStructs[i].textHandle == (HWND)textHandle)
+    {
+      if(textStructs[i].textClickEventHandler!=NULL)
+      {
+        textStructs[i].textClickEventHandler->TextClickEventHandler(textHandle);
       }
       break;
     }
@@ -534,7 +564,11 @@ LRESULT CALLBACK WinApi_Wmal::EventHandler( HWND hwnd, UINT msg, WPARAM wParam, 
     break;
 
     case WM_COMMAND:
-      ButtonClicked(lParam);
+      if(HIWORD(wParam) == BN_CLICKED)
+      {
+        TextClicked(lParam);
+        ButtonClicked(lParam);
+      }
     break;
     case WM_PAINT:
       if(!PaintWindow((int32_t)hwnd))

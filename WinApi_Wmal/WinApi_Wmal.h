@@ -31,6 +31,12 @@ typedef struct
   ITextClickEventHandler *textClickEventHandler;
 } TextStruct;
 
+typedef struct
+{
+  int32_t editHandle;
+  IEditFocusEventHandler *editFocusHandler;
+} EditFocusHandlerItem;
+
 class WinApi_Wmal: public IWmal
 {
 private:
@@ -47,6 +53,7 @@ private:
   static const uint32_t LISTVIEW_ROW_HEIGHT = 20;
   static const uint32_t MAX_WINDOWS_COUNT = 30;
   static const uint32_t MAX_STATIC_TEXTS = 100;
+  static const uint32_t MAX_EDITS_COUNT = 100;
   static const uint32_t DEFAULT_BK_COLOR = RGB(200,200,200);
 
   static uint32_t buttonHandlersCount;
@@ -55,6 +62,10 @@ private:
   static PaintHandlerItem paintEventHandlers[MAX_WINDOWS_COUNT];
   static uint32_t clickHandlersCount;
   static ClickHandlerItem clickEventHandlers[MAX_WINDOWS_COUNT];
+
+  static uint32_t editFocusHandlersCount;
+  static EditFocusHandlerItem editFocusHandlers[MAX_EDITS_COUNT];
+
   static uint32_t windowsCount;
   static HWND windowHandles[MAX_WINDOWS_COUNT];
   static HDC currentHdc;
@@ -71,6 +82,7 @@ private:
   static void TextClicked(int32_t textHandle);
   static bool PaintWindow(int32_t windowHandle);
   static bool ClickWindow(int32_t windowHandle, int32_t x, int32_t y);
+  static void EditFocused(int32_t editHandle);
   void CreateMainWindow();
 public:
   explicit WinApi_Wmal(HINSTANCE appInstance);
@@ -96,6 +108,9 @@ public:
   virtual int32_t CreateEdit(int32_t hParent, int32_t x, int32_t y, int32_t width, int32_t height, int32_t textLength, const char *text) override;
   virtual void SetEditText(int32_t editHandle, const char *text) override;
   virtual void GetEditText(int32_t editHandle, char *text, int32_t maxLength) override;
+  virtual void SendChar(int32_t controlHandle, char character) override;
+  virtual void SetFocus(int32_t controlHandle) override;
+  virtual void AssignEditFocusCallback(int32_t editHandle, IEditFocusEventHandler *editFocusEventHandler) override;
   virtual void SetTextBkColor(int32_t textHandle, uint32_t color) override;
   virtual int32_t CreateComboBox(int32_t hParent, int32_t x, int32_t y, int32_t width, int32_t height, const char **items, const int32_t itemsCount) override;
   virtual int32_t GetComboBoxSelection(int32_t comboBoxHandle) override;

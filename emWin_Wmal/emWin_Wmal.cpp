@@ -12,6 +12,9 @@ PaintHandlerItem STemWinWindowManager::paintEventHandlers[MAX_WINDOWS_COUNT];
 uint32_t STemWinWindowManager::clickHandlersCount = 0;
 ClickHandlerItem STemWinWindowManager::clickEventHandlers[MAX_WINDOWS_COUNT];
 
+uint32_t STemWinWindowManager::textClickHandlersCount = 0;
+TextClickHandlerItem STemWinWindowManager::textClickHandlers[MAX_TEXTS_COUNT];
+
 STemWinWindowManager::STemWinWindowManager():
   m_width(0),
   m_height(0)
@@ -106,6 +109,16 @@ void STemWinWindowManager::SetTextText(int32_t handle, const char *text)
 {
   TEXT_SetText(handle, text);
 }
+
+void STemWinWindowManager::AssignTextClickCallback(int32_t textHandle, ITextClickEventHandler *textClickEventHandler)
+{
+  DBG_ASSERT(textClickHandlersCount<MAX_TEXTS_COUNT);
+  WM_SetCallback(textHandle, TextCallback);
+  textClickHandlers[textClickHandlersCount].clickHandler = textClickEventHandler;
+  textClickHandlers[textClickHandlersCount].textHandle = textHandle;
+  textClickHandlersCount++;
+}
+
 
 bool STemWinWindowManager::Execute()
 {
@@ -311,7 +324,7 @@ void STemWinWindowManager::AssignPaintCallback(int32_t windowHandle, IPaintEvent
   paintHandlersCount++;
 }
 
-void STemWinWindowManager::AssignClickCallback(int32_t windowHandle, IClickEventHandler *clickEventHandler)
+void STemWinWindowManager::AssignWindowClickCallback(int32_t windowHandle, IClickEventHandler *clickEventHandler)
 {
   DBG_ASSERT(clickHandlersCount < MAX_WINDOWS_COUNT);
   clickEventHandlers[clickHandlersCount].clickWindowHandler = clickEventHandler;
@@ -348,6 +361,18 @@ void STemWinWindowManager::buttonClicked(int32_t buttonHandle)
   }
 }
 
+void STemWinWindowManager::TextClicked(int32_t textHandle)
+{
+  for(uint32_t i=0; i<textClickHandlersCount; i++)
+  {
+    if(textClickHandlers[i].textHandle == textHandle)
+    {
+      textClickHandlers[i].clickHandler->TextClickEventHandler(textHandle);
+      break;
+    }
+  }
+}
+
 void STemWinWindowManager::ClickWindow(int32_t windowHandle, int32_t x, int32_t y)
 {
   for(uint32_t i=0; i<clickHandlersCount; i++)
@@ -375,3 +400,29 @@ void STemWinWindowManager::PaintWindow(int32_t windowHandle)
     }
   }
 }
+
+void STemWinWindowManager::TextCallback(WM_MESSAGE *msg)
+{
+  GUI_PID_STATE * pidState;
+  WM_MESSAGE notifyMessage;
+  switch (msg->MsgId)
+  {
+    case WM_TOUCH:
+      TextClicked(msg->hWin);
+      pidState = (GUI_PID_STATE*)msg->Data.p;
+      if (pidState->Pressed) {
+        TextClicked(msg->hWin);
+/*
+        notifyMessage.Data.v = WM_NOTIFICATION_CLICKED;
+        notifyMessage.hWinSrc = msg->hWin;
+        notifyMessage.MsgId = WM_NOTIFY_PARENT;
+        WM_SendMessage(WM_GetParent(msg->hWin), &notifyMessage);
+*/
+      }
+      break;
+    default:
+      TEXT_Callback(msg);
+      break;
+  }
+}
+

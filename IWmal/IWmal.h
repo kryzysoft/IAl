@@ -27,6 +27,12 @@ public:
   virtual void TextClickEventHandler(int32_t textHandle) = 0;
 };
 
+class IEditFocusEventHandler
+{
+public:
+  virtual void EditFocusEventHandler(int32_t editHandle) = 0;
+};
+
 
 class IWmal
 {
@@ -56,6 +62,9 @@ public:
   virtual int32_t CreateEdit(int32_t hParent, int32_t x, int32_t y, int32_t width, int32_t height, int32_t textLength, const char *text) = 0;
   virtual void SetEditText(int32_t editHandle, const char *text) = 0;
   virtual void GetEditText(int32_t editHandle, char *text, int32_t maxLength) = 0;
+  virtual void SendChar(int32_t controlHandle, char character) = 0;
+  virtual void SetFocus(int32_t controlHandle) = 0;
+  virtual void AssignEditFocusCallback(int32_t editHandle, IEditFocusEventHandler *editFocusEventHandler) = 0;
   virtual void SetTextBkColor(int32_t textHandle, uint32_t color) = 0;
   virtual int32_t CreateComboBox(int32_t hParent, int32_t x, int32_t y, int32_t width, int32_t height, const char **items, const int32_t itemsCount) = 0;
   virtual int32_t GetComboBoxSelection(int32_t comboBoxHandle) = 0;

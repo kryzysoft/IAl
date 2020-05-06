@@ -22,6 +22,12 @@ typedef struct
   IClickEventHandler *clickWindowHandler;
 } ClickHandlerItem;
 
+typedef struct
+{
+  int32_t textHandle;
+  ITextClickEventHandler *clickHandler;
+} TextClickHandlerItem;
+
 class STemWinWindowManager: public IWmal {
 private:
   static void eventHandler(WM_MESSAGE * pMsg);
@@ -30,16 +36,21 @@ private:
   static const uint32_t MAX_BUTTONS_TOTAL = 100;
   static const uint32_t LISTVIEW_ROW_HEIGHT = 20;
   static const uint32_t MAX_WINDOWS_COUNT = 20;
+  static const uint32_t MAX_TEXTS_COUNT = 100;
   static uint32_t buttonHandlersCount;
   static ButtonHandlerItem buttonEventHandlers[MAX_BUTTONS_TOTAL];
   static uint32_t paintHandlersCount;
   static PaintHandlerItem paintEventHandlers[MAX_WINDOWS_COUNT];
   static uint32_t clickHandlersCount;
   static ClickHandlerItem clickEventHandlers[MAX_WINDOWS_COUNT];
+  static uint32_t textClickHandlersCount;
+  static TextClickHandlerItem textClickHandlers[MAX_TEXTS_COUNT];
 
   static void buttonClicked(int32_t buttonHandle);
   static void ClickWindow(int32_t windowHandle, int32_t x, int32_t y);
   static void PaintWindow(int32_t windowHandle);
+  static void TextCallback(WM_MESSAGE *msg);
+  static void TextClicked(int32_t textHandle);
 public:
   STemWinWindowManager();
   virtual void Init(int32_t width, int32_t height);
@@ -47,12 +58,13 @@ public:
   virtual void DeleteControl(int32_t handle) override;
   virtual int32_t CreateWinMaximized() override;
   virtual void AssignPaintCallback(int32_t windowHandle, IPaintEventHandler *paintEventHandler) override;
-  virtual void AssignClickCallback(int32_t windowHandle, IClickEventHandler *clickEventHandler) override;
+  virtual void AssignWindowClickCallback(int32_t windowHandle, IClickEventHandler *clickEventHandler) override;
   virtual void DrawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1) override;
   virtual void DrawTextHvCenter(int32_t x0, int32_t y0, const char *text) override;
   virtual int32_t CreateText(int32_t parent, int32_t x, int32_t y,
       int32_t width, int32_t height, const char *text) override;
   virtual void SetTextText(int32_t handle, const char *text) override;
+  virtual void AssignTextClickCallback(int32_t textHandle, ITextClickEventHandler *textClickEventHandler) override;
   virtual int32_t CreateButton(int32_t parent, int32_t x, int32_t y,
       int32_t width, int32_t height, const char *text,
       IButtonEventHandler *buttonEventHandler) override;

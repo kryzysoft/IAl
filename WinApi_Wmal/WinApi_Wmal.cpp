@@ -19,6 +19,9 @@ HWND WinApi_Wmal::windowHandles[MAX_WINDOWS_COUNT];
 uint32_t WinApi_Wmal::textsCount = 0;
 TextStruct WinApi_Wmal::textStructs[MAX_STATIC_TEXTS];
 
+uint32_t WinApi_Wmal::editFocusHandlersCount;
+EditFocusHandlerItem WinApi_Wmal::editFocusHandlers[MAX_EDITS_COUNT];
+
 HFONT WinApi_Wmal::m_hFont;
 
 bool WinApi_Wmal::paintInProgress = false;
@@ -395,6 +398,24 @@ void WinApi_Wmal::GetEditText(int32_t editHandle, char *text, int32_t maxLength)
   GetWindowText((HWND)editHandle, text, maxLength);
 }
 
+void WinApi_Wmal::SendChar(int32_t controlHandle, char character)
+{
+  SendMessage((HWND)controlHandle,WM_CHAR, character, 1);
+}
+
+void WinApi_Wmal::SetFocus(int32_t controlHandle)
+{
+  ::SetFocus((HWND)controlHandle);
+}
+
+void WinApi_Wmal::AssignEditFocusCallback(int32_t editHandle, IEditFocusEventHandler *editFocusEventHandler)
+{
+  DBG_ASSERT(editFocusHandlersCount < MAX_EDITS_COUNT);
+  editFocusHandlers[editFocusHandlersCount].editFocusHandler = editFocusEventHandler;
+  editFocusHandlers[editFocusHandlersCount].editHandle = editHandle;
+  editFocusHandlersCount++;
+}
+
 
 void WinApi_Wmal::Touch(int32_t x, int32_t y)
 {
@@ -459,6 +480,21 @@ void WinApi_Wmal::TextClicked(int32_t textHandle)
     }
   }
 }
+
+void WinApi_Wmal::EditFocused(int32_t editHandle)
+{
+  for(uint32_t i=0; i<editFocusHandlersCount; i++)
+  {
+    if(editFocusHandlers[i].editHandle == editHandle)
+    {
+      if(editFocusHandlers[i].editFocusHandler!=NULL)
+      {
+        editFocusHandlers[i].editFocusHandler->EditFocusEventHandler(editHandle);
+      }
+      break;
+    }
+  }}
+
 
 void WinApi_Wmal::DrawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1)
 {
@@ -568,6 +604,10 @@ LRESULT CALLBACK WinApi_Wmal::EventHandler( HWND hwnd, UINT msg, WPARAM wParam, 
       {
         TextClicked(lParam);
         ButtonClicked(lParam);
+      }
+      if(HIWORD(wParam) == EN_SETFOCUS)
+      {
+        EditFocused(lParam);
       }
     break;
     case WM_PAINT:

@@ -19,7 +19,7 @@ HWND WinApi_Wmal::windowHandles[MAX_WINDOWS_COUNT];
 uint32_t WinApi_Wmal::textsCount = 0;
 TextStruct WinApi_Wmal::textStructs[MAX_STATIC_TEXTS];
 
-uint32_t WinApi_Wmal::editFocusHandlersCount;
+uint32_t WinApi_Wmal::editFocusHandlersCount = 0;
 EditFocusHandlerItem WinApi_Wmal::editFocusHandlers[MAX_EDITS_COUNT];
 
 HFONT WinApi_Wmal::m_hFont;
@@ -123,7 +123,7 @@ int32_t WinApi_Wmal::CreateWin(int32_t x, int32_t y, int32_t width, int32_t heig
   bool adjustResult = AdjustWindowRectEx(&rect,WINDOW_STYLE,false,/*WS_EX_CLIENTEDGE|*/ WS_EX_TOOLWINDOW);
   DBG_ASSERT(adjustResult==true);
 
-  HWND hwnd = CreateWindowEx( /*WS_EX_CLIENTEDGE|*/WS_EX_TOOLWINDOW, "NewWinApi_WmalWindow", "WinApi_Wmal", WINDOW_STYLE,
+  HWND hwnd = CreateWindowEx(WS_EX_COMPOSITED| /*WS_EX_CLIENTEDGE|*/WS_EX_TOOLWINDOW, "NewWinApi_WmalWindow", "WinApi_Wmal", WINDOW_STYLE,
   x, y, rect.right - rect.left, rect.bottom-rect.top, NULL, NULL, m_appInstance, NULL );
 
   SetParent(hwnd,m_hMainWindow);
@@ -137,9 +137,86 @@ int32_t WinApi_Wmal::CreateWin(int32_t x, int32_t y, int32_t width, int32_t heig
 
 void WinApi_Wmal::DeleteControl(int32_t handle)
 {
-  // Remove handle from all the lists
   bool retVal = DestroyWindow((HWND)handle);
   DBG_ASSERT(retVal);
+
+  for (uint32_t i=0; i<buttonHandlersCount; i++)
+  {
+    if(buttonEventHandlers[i].buttonHandle == handle)
+    {
+      if(i<buttonHandlersCount-1)
+      {
+        buttonEventHandlers[i] = buttonEventHandlers[buttonHandlersCount-1];
+      }
+      buttonHandlersCount--;
+      break;
+    }
+  }
+
+  for (uint32_t i=0; i<paintHandlersCount; i++)
+  {
+    if(paintEventHandlers[i].windowHandle == handle)
+    {
+      if(i<paintHandlersCount-1)
+      {
+        paintEventHandlers[i] = paintEventHandlers[paintHandlersCount-1];
+      }
+      paintHandlersCount--;
+      break;
+    }
+  }
+
+  for (uint32_t i=0; i<clickHandlersCount; i++)
+  {
+    if(clickEventHandlers[i].windowHandle == handle)
+    {
+      if(i<clickHandlersCount-1)
+      {
+        clickEventHandlers[i] = clickEventHandlers[clickHandlersCount-1];
+      }
+      clickHandlersCount--;
+      break;
+    }
+  }
+
+  for (uint32_t i=0; i<windowsCount; i++)
+  {
+    if(windowHandles[i] == (HWND)handle)
+    {
+      if(i<windowsCount-1)
+      {
+        windowHandles[i] = windowHandles[windowsCount-1];
+      }
+      windowsCount--;
+      break;
+    }
+  }
+
+  for (uint32_t i=0; i<textsCount; i++)
+  {
+    if(textStructs[i].textHandle == (HWND)handle)
+    {
+      if(i<textsCount-1)
+      {
+        textStructs[i] = textStructs[textsCount-1];
+      }
+      textsCount--;
+      break;
+    }
+  }
+
+  for (uint32_t i=0; i<editFocusHandlersCount; i++)
+  {
+    if(editFocusHandlers[i].editHandle == handle)
+    {
+      if(i<editFocusHandlersCount-1)
+      {
+        editFocusHandlers[i] = editFocusHandlers[editFocusHandlersCount-1];
+      }
+      editFocusHandlersCount--;
+      break;
+    }
+  }
 }
 
 
@@ -207,7 +284,7 @@ void WinApi_Wmal::SetTextBkColor(int32_t textHandle, uint32_t color)
       textStructs[i].hBrush = CreateSolidBrush(color);
       RECT rect;
       GetClientRect((HWND)textHandle, &rect);
-      InvalidateRect(textStructs[i].textHandle, &rect, true);
+      InvalidateRect(textStructs[i].textHandle, &rect, false);
       UpdateWindow(textStructs[i].textHandle);
       break;
     }
@@ -309,6 +386,10 @@ void WinApi_Wmal::AssignWindowClickCallback(int32_t windowHandle, IClickEventHan
 int32_t WinApi_Wmal::CreateListView(int32_t parent, int32_t x,
     int32_t y, int32_t width, int32_t height)
 {
+  // WS_EX_COMPOSITED is incopmatible with ListView
+  // So we need to remove that style form the parent window
+  // This disables double buffering for specific window, but hopefully we will never need that
+  SetWindowLong((HWND)parent, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
 
   HWND hListView = CreateWindowEx( 0, WC_LISTVIEW, NULL, WS_CHILD | WS_VISIBLE | LVS_REPORT |
   LVS_EDITLABELS, x, y, width, height, (HWND)parent,0, m_appInstance, NULL );
@@ -493,7 +574,8 @@ void WinApi_Wmal::EditFocused(int32_t editHandle)
       }
       break;
     }
-  }}
+  }
+}
 
 
 void WinApi_Wmal::DrawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1)

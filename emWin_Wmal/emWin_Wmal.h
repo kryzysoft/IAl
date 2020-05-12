@@ -28,6 +28,12 @@ typedef struct
   ITextClickEventHandler *clickHandler;
 } TextClickHandlerItem;
 
+typedef struct
+{
+  int32_t editHandle;
+  IEditFocusEventHandler *editFocusHandler;
+} EditFocusHandlerItem;
+
 class STemWinWindowManager: public IWmal {
 private:
   static void eventHandler(WM_MESSAGE * pMsg);
@@ -37,6 +43,7 @@ private:
   static const uint32_t LISTVIEW_ROW_HEIGHT = 20;
   static const uint32_t MAX_WINDOWS_COUNT = 20;
   static const uint32_t MAX_TEXTS_COUNT = 100;
+  static const uint32_t MAX_EDITS_COUNT = 100;
   static uint32_t buttonHandlersCount;
   static ButtonHandlerItem buttonEventHandlers[MAX_BUTTONS_TOTAL];
   static uint32_t paintHandlersCount;
@@ -45,12 +52,14 @@ private:
   static ClickHandlerItem clickEventHandlers[MAX_WINDOWS_COUNT];
   static uint32_t textClickHandlersCount;
   static TextClickHandlerItem textClickHandlers[MAX_TEXTS_COUNT];
-
+  static uint32_t editFocusHandlersCount;
+  static EditFocusHandlerItem editFocusHandlers[MAX_EDITS_COUNT];
   static void buttonClicked(int32_t buttonHandle);
   static void ClickWindow(int32_t windowHandle, int32_t x, int32_t y);
   static void PaintWindow(int32_t windowHandle);
   static void TextCallback(WM_MESSAGE *msg);
   static void TextClicked(int32_t textHandle);
+  static void EditFocused(int32_t editHandle);
 public:
   STemWinWindowManager();
   virtual void Init(int32_t width, int32_t height);
@@ -87,11 +96,12 @@ public:
   virtual void GetListViewText(int32_t listViewHandle, int32_t row,
       int32_t column, char *text, int32_t bufferSize) override;
   virtual int32_t CreateEdit(int32_t hParent, int32_t x, int32_t y,
-      int32_t width, int32_t height, int32_t textLength, const char *text)
-          override;
+      int32_t width, int32_t height, int32_t textLength, const char *text) override;
   virtual void SetEditText(int32_t editHandle, const char *text) override;
-  virtual void GetEditText(int32_t editHandle, char *text, int32_t maxLength)
-      override;
+  virtual void GetEditText(int32_t editHandle, char *text, int32_t maxLength) override;
+  virtual void SendChar(int32_t controlHandle, char character) override;
+  virtual void SetFocus(int32_t controlHandle) override;
+  virtual void AssignEditFocusCallback(int32_t editHandle, IEditFocusEventHandler *editFocusEventHandler) override;
   virtual void SetTextBkColor(int32_t textHandle, uint32_t color) override;
   virtual int32_t CreateComboBox(int32_t hParent, int32_t x, int32_t y,
       int32_t width, int32_t height, const char **items,

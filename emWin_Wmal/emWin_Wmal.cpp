@@ -15,6 +15,9 @@ ClickHandlerItem STemWinWindowManager::clickEventHandlers[MAX_WINDOWS_COUNT];
 uint32_t STemWinWindowManager::textClickHandlersCount = 0;
 TextClickHandlerItem STemWinWindowManager::textClickHandlers[MAX_TEXTS_COUNT];
 
+uint32_t STemWinWindowManager::editFocusHandlersCount = 0;
+EditFocusHandlerItem STemWinWindowManager::editFocusHandlers[MAX_EDITS_COUNT];
+
 STemWinWindowManager::STemWinWindowManager():
   m_width(0),
   m_height(0)
@@ -202,6 +205,24 @@ void STemWinWindowManager::GetEditText(int32_t editHandle, char *text,
   EDIT_GetText(editHandle, text, maxLength);
 }
 
+void STemWinWindowManager::SendChar(int32_t controlHandle, char character)
+{
+  EDIT_AddKey(controlHandle, character);
+}
+
+void STemWinWindowManager::SetFocus(int32_t controlHandle)
+{
+  WM_SetFocus(controlHandle);
+}
+
+void STemWinWindowManager::AssignEditFocusCallback(int32_t editHandle, IEditFocusEventHandler *editFocusEventHandler)
+{
+  DBG_ASSERT(editFocusHandlersCount < MAX_EDITS_COUNT);
+  editFocusHandlers[editFocusHandlersCount].editFocusHandler = editFocusEventHandler;
+  editFocusHandlers[editFocusHandlersCount].editHandle = editHandle;
+  editFocusHandlersCount++;
+}
+
 void STemWinWindowManager::SetTextBkColor(int32_t textHandle, uint32_t color)
 {
   TEXT_SetBkColor(textHandle, color);
@@ -283,6 +304,7 @@ void STemWinWindowManager::eventHandler(WM_MESSAGE * pMsg)
         int32_t x = pidState->x;
         int32_t y = pidState->y;
         ClickWindow(pMsg->MsgId,x,y);
+        EditFocused(pMsg->hWinSrc);
       }
       break;
     case WM_PID_STATE_CHANGED:
@@ -401,10 +423,24 @@ void STemWinWindowManager::PaintWindow(int32_t windowHandle)
   }
 }
 
+void STemWinWindowManager::EditFocused(int32_t editHandle)
+{
+  for(uint32_t i=0; i<editFocusHandlersCount; i++)
+  {
+    if(editFocusHandlers[i].editHandle == editHandle)
+    {
+      if(editFocusHandlers[i].editFocusHandler!=NULL)
+      {
+        editFocusHandlers[i].editFocusHandler->EditFocusEventHandler(editHandle);
+      }
+      break;
+    }
+  }
+}
+
 void STemWinWindowManager::TextCallback(WM_MESSAGE *msg)
 {
   GUI_PID_STATE * pidState;
-  WM_MESSAGE notifyMessage;
   switch (msg->MsgId)
   {
     case WM_TOUCH:
@@ -412,12 +448,6 @@ void STemWinWindowManager::TextCallback(WM_MESSAGE *msg)
       pidState = (GUI_PID_STATE*)msg->Data.p;
       if (pidState->Pressed) {
         TextClicked(msg->hWin);
-/*
-        notifyMessage.Data.v = WM_NOTIFICATION_CLICKED;
-        notifyMessage.hWinSrc = msg->hWin;
-        notifyMessage.MsgId = WM_NOTIFY_PARENT;
-        WM_SendMessage(WM_GetParent(msg->hWin), &notifyMessage);
-*/
       }
       break;
     default:

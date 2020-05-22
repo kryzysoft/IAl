@@ -22,7 +22,7 @@ TextStruct WinApi_Wmal::textStructs[MAX_STATIC_TEXTS];
 uint32_t WinApi_Wmal::editFocusHandlersCount = 0;
 EditFocusHandlerItem WinApi_Wmal::editFocusHandlers[MAX_EDITS_COUNT];
 
-HFONT WinApi_Wmal::m_hFont;
+HFONT WinApi_Wmal::hFont;
 
 bool WinApi_Wmal::paintInProgress = false;
 
@@ -44,8 +44,8 @@ WinApi_Wmal::WinApi_Wmal(HINSTANCE appInstance):
   logFont.lfHeight = -MulDiv(nFontSize, GetDeviceCaps(hdc, LOGPIXELSY), 72);
   logFont.lfWeight = FW_BOLD;
   strcpy(logFont.lfFaceName, fontName);
-  m_hFont = CreateFontIndirect(&logFont);
-  DBG_ASSERT(m_hFont!=NULL);
+  hFont = CreateFontIndirect(&logFont);
+  DBG_ASSERT(hFont!=NULL);
   int32_t releaseResult = ReleaseDC(0, hdc);
   DBG_ASSERT(releaseResult == 1);
 
@@ -350,7 +350,7 @@ int32_t WinApi_Wmal::CreateButton(
 
   buttonEventHandlers[buttonHandlersCount].buttonHandle = (int32_t)hwndButton;
   buttonEventHandlers[buttonHandlersCount].buttonEventHandler = buttonEventHandler;
-  SendMessage(hwndButton, WM_SETFONT, (WPARAM)m_hFont, (LPARAM)MAKELONG(TRUE, 0));
+  SendMessage(hwndButton, WM_SETFONT, (WPARAM)hFont, (LPARAM)MAKELONG(TRUE, 0));
 
   buttonHandlersCount++;
   DBG_ASSERT(buttonHandlersCount < MAX_BUTTONS_TOTAL);
@@ -602,6 +602,20 @@ void WinApi_Wmal::DrawTextHvCenter(int32_t x0, int32_t y0, const char *text)
   DBG_ASSERT(result > 0);
 }
 
+void WinApi_Wmal::DrawTextVCenter(int32_t x0, int32_t y0, const char *text)
+{
+  DBG_ASSERT(paintInProgress == true);
+  int32_t result = SetBkMode(currentHdc, TRANSPARENT);
+  DBG_ASSERT(result!=0);
+  RECT rect;
+  rect.left = x0;
+  rect.right = x0;
+  rect.top = y0;
+  rect.bottom = y0;
+  result = DrawText(currentHdc, text, -1, &rect, DT_CENTER | DT_SINGLELINE | DT_NOCLIP);
+  DBG_ASSERT(result > 0);
+}
+
 bool WinApi_Wmal::PaintWindow(int32_t windowHandle)
 {
   bool retVal = false;
@@ -613,7 +627,7 @@ bool WinApi_Wmal::PaintWindow(int32_t windowHandle)
       PAINTSTRUCT ps;
       currentHdc = BeginPaint((HWND)windowHandle, &ps);
       DBG_ASSERT(currentHdc != NULL);
-      HGDIOBJ hGdiObj = SelectObject( currentHdc, m_hFont );
+      HGDIOBJ hGdiObj = SelectObject( currentHdc, hFont );
       DBG_ASSERT(hGdiObj!=NULL);
       paintInProgress = true;
       RECT rect;
@@ -723,7 +737,7 @@ WinApi_Wmal::~WinApi_Wmal()
     deleteResult = DeleteObject(textStructs[i].hBrush);
     DBG_ASSERT(deleteResult != 0);
   }
-  deleteResult = DeleteObject(m_hFont);
+  deleteResult = DeleteObject(hFont);
   DBG_ASSERT(deleteResult != 0);
   deleteResult = DeleteObject(m_hBkBrush);
   DBG_ASSERT(deleteResult != 0);

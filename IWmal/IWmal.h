@@ -44,6 +44,7 @@ public:
   virtual void AssignWindowClickCallback(int32_t windowHandle, IClickEventHandler *clickEventHandler) = 0;
   virtual void DrawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1) = 0;
   virtual void DrawTextHvCenter(int32_t x0, int32_t y0, const char *text) = 0;
+  virtual void DrawTextVCenter(int32_t x0, int32_t y0, const char *text) = 0;
   virtual int32_t CreateText(int32_t parent, int32_t x, int32_t y, int32_t width, int32_t height, const char *text) = 0;
   virtual void SetTextText(int32_t handle, const char *text) = 0;
   virtual void AssignTextClickCallback(int32_t textHandle, ITextClickEventHandler *textClickEventHandler) = 0;

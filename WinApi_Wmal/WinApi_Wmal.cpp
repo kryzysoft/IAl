@@ -612,7 +612,7 @@ void WinApi_Wmal::DrawTextVCenter(int32_t x0, int32_t y0, const char *text)
   rect.right = x0;
   rect.top = y0;
   rect.bottom = y0;
-  result = DrawText(currentHdc, text, -1, &rect, DT_CENTER | DT_SINGLELINE | DT_NOCLIP);
+  result = DrawText(currentHdc, text, -1, &rect, DT_VCENTER | DT_SINGLELINE | DT_NOCLIP);
   DBG_ASSERT(result > 0);
 }
 

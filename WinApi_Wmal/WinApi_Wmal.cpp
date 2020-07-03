@@ -391,8 +391,7 @@ int32_t WinApi_Wmal::CreateListView(int32_t parent, int32_t x,
   // This disables double buffering for specific window, but hopefully we will never need that
   SetWindowLong((HWND)parent, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
 
-  HWND hListView = CreateWindowEx( 0, WC_LISTVIEW, NULL, WS_CHILD | WS_VISIBLE | LVS_REPORT |
-  LVS_EDITLABELS, x, y, width, height, (HWND)parent,0, m_appInstance, NULL );
+  HWND hListView = CreateWindowEx( 0, WC_LISTVIEW, NULL, WS_CHILD | WS_VISIBLE | LVS_REPORT, x, y, width, height, (HWND)parent,0, m_appInstance, NULL );
 
   DBG_ASSERT(hListView != NULL);
 

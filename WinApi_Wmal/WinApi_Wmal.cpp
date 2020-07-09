@@ -219,7 +219,6 @@ void WinApi_Wmal::DeleteControl(int32_t handle)
   }
 }
 
-
 int32_t WinApi_Wmal::CreateWinMaximized()
 {
   return CreateWin(0,0,m_width,m_height);

@@ -49,7 +49,7 @@ private:
   static bool paintInProgress;
   static HFONT hFont;
 
-  static const uint32_t MAX_BUTTONS_TOTAL = 100;
+  static const uint32_t MAX_BUTTONS_TOTAL = 200;
   static const uint32_t LISTVIEW_ROW_HEIGHT = 20;
   static const uint32_t MAX_WINDOWS_COUNT = 30;
   static const uint32_t MAX_STATIC_TEXTS = 100;

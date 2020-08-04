@@ -17,6 +17,7 @@ class IHalRtc
     virtual void GetLatchedTime(uint8_t *hour, uint8_t *minutes, uint8_t *seconds) = 0;
     virtual void SetAlarmHandler(IRtcAlarmHandler *rtcAlarmHandler) = 0;
     virtual void SetupAlarmInSeconds(uint32_t seconds) = 0;
+    virtual uint32_t GetOnTimeInMs() = 0;
     virtual ~IHalRtc(){};
 };
 

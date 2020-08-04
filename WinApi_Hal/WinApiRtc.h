@@ -8,6 +8,7 @@ class WinApiRtc: public IHalRtc
 {
 private:
   std::chrono::system_clock::time_point m_latchedTime;
+  std::chrono::steady_clock::time_point m_startTime;
 public:
   WinApiRtc();
   virtual void LatchDateAndTime();
@@ -15,6 +16,7 @@ public:
   virtual void GetLatchedTime(uint8_t *hour, uint8_t *minutes, uint8_t *seconds);
   virtual void SetAlarmHandler(IRtcAlarmHandler *rtcAlarmHandler);
   virtual void SetupAlarmInSeconds(uint32_t seconds);
+  virtual uint32_t GetOnTimeInMs();
 };
 
 #endif

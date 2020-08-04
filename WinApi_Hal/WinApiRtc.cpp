@@ -4,6 +4,7 @@
 
 WinApiRtc::WinApiRtc():m_latchedTime()
 {
+  m_startTime = std::chrono::steady_clock::now();
 }
 
 void WinApiRtc::LatchDateAndTime()
@@ -37,6 +38,15 @@ void WinApiRtc::SetAlarmHandler(IRtcAlarmHandler *rtcAlarmHandler)
 void WinApiRtc::SetupAlarmInSeconds(uint32_t seconds)
 {
   DBG_ASSERT(false);
+}
+
+uint32_t WinApiRtc::GetOnTimeInMs()
+{
+  auto now = std::chrono::steady_clock::now();
+  auto nowMs = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_startTime);
+  return nowMs.count();
+
+ // return now.Count();
 }
 
 

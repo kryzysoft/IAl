@@ -39,7 +39,7 @@ private:
   static void eventHandler(WM_MESSAGE * pMsg);
   int32_t m_width;
   int32_t m_height;
-  static const uint32_t MAX_BUTTONS_TOTAL = 100;
+  static const uint32_t MAX_BUTTONS_TOTAL = 200;
   static const uint32_t LISTVIEW_ROW_HEIGHT = 20;
   static const uint32_t MAX_WINDOWS_COUNT = 20;
   static const uint32_t MAX_TEXTS_COUNT = 100;
@@ -70,6 +70,7 @@ public:
   virtual void AssignWindowClickCallback(int32_t windowHandle, IClickEventHandler *clickEventHandler) override;
   virtual void DrawLine(int32_t x0, int32_t y0, int32_t x1, int32_t y1) override;
   virtual void DrawTextHvCenter(int32_t x0, int32_t y0, const char *text) override;
+  virtual void DrawTextVCenter(int32_t x0, int32_t y0, const char *text) override;
   virtual int32_t CreateText(int32_t parent, int32_t x, int32_t y,
       int32_t width, int32_t height, const char *text) override;
   virtual void SetTextText(int32_t handle, const char *text) override;

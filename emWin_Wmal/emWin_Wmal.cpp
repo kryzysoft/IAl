@@ -366,6 +366,13 @@ void STemWinWindowManager::DrawTextHvCenter(int32_t x0, int32_t y0, const char *
   GUI_DispStringAt(text, x0, y0);
 }
 
+void STemWinWindowManager::DrawTextVCenter(int32_t x0, int32_t y0, const char *text)
+{
+  GUI_SetTextAlign(GUI_TA_LEFT | GUI_TA_VCENTER);
+  GUI_SetTextMode(GUI_TM_TRANS);
+  GUI_DispStringAt(text, x0, y0);
+}
+
 void STemWinWindowManager::InvalidateWindow(int32_t windowHandle)
 {
   WM_InvalidateWindow(windowHandle);
